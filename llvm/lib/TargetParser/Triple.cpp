@@ -49,6 +49,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case loongarch32:    return "loongarch32";
   case loongarch64:    return "loongarch64";
   case m68k:           return "m68k";
+  case m86:            return "m86";
   case mips64:         return "mips64";
   case mips64el:       return "mips64el";
   case mips:           return "mips";
@@ -373,6 +374,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
     .Case("avr", avr)
     .StartsWith("bpf", BPFArch)
     .Case("m68k", m68k)
+    .Case("m86", m86)
     .Case("mips", mips)
     .Case("mipsel", mipsel)
     .Case("mips64", mips64)
@@ -862,6 +864,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::loongarch32:
   case Triple::loongarch64:
   case Triple::m68k:
+  case Triple::m86:
   case Triple::mips64:
   case Triple::mips64el:
   case Triple::mips:
@@ -1462,6 +1465,7 @@ static unsigned getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
   case llvm::Triple::le32:
   case llvm::Triple::loongarch32:
   case llvm::Triple::m68k:
+  case llvm::Triple::m86:
   case llvm::Triple::mips:
   case llvm::Triple::mipsel:
   case llvm::Triple::nvptx:
@@ -1554,6 +1558,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::le32:
   case Triple::loongarch32:
   case Triple::m68k:
+  case Triple::m86:
   case Triple::mips:
   case Triple::mipsel:
   case Triple::nvptx:
@@ -1619,6 +1624,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::kalimba:
   case Triple::lanai:
   case Triple::m68k:
+  case Triple::m86:
   case Triple::msp430:
   case Triple::r600:
   case Triple::shave:
