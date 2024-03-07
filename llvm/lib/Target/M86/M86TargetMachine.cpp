@@ -33,7 +33,7 @@ llvm::M86TargetMachine::M86TargetMachine(const llvm::Target &T, const llvm::Trip
                                          const llvm::TargetOptions &Options,
                                          std::optional<llvm::Reloc::Model> RM,
                                          std::optional<llvm::CodeModel::Model> CM,
-                                         llvm::CodeGenOpt::Level OL, bool JIT,
+                                         llvm::CodeGenOptLevel OL, bool JIT,
                                          bool IsLittle)
     : llvm::LLVMTargetMachine(T, computeDataLayout(TT, CPU, Options, IsLittle), TT,
                         CPU, FS, Options, getEffectiveRelocModel(JIT, RM),
@@ -47,7 +47,7 @@ llvm::M86TargetMachine::M86TargetMachine(const llvm::Target &T, const llvm::Trip
                                          const llvm::TargetOptions &Options,
                                          std::optional<llvm::Reloc::Model> RM,
                                          std::optional<llvm::CodeModel::Model> CM,
-                                         llvm::CodeGenOpt::Level OL, bool JIT)
+                                         llvm::CodeGenOptLevel OL, bool JIT)
     : llvm::M86TargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, JIT, true) {}
 
 llvm::TargetPassConfig *llvm::M86TargetMachine::createPassConfig(llvm::PassManagerBase &PM) {
