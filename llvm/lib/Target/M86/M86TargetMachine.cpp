@@ -6,6 +6,14 @@
 
 #include "M86TargetMachine.h"
 #include "TargetInfo/M86TargetInfo.h"
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/CodeGen.h>
+#include <llvm/Support/Compiler.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/TargetParser/Triple.h>
+#include <memory>
+#include <string>
 
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86Target() {
   // Register the target.
