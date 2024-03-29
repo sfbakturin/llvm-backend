@@ -1,7 +1,14 @@
 add_llvm_component_group(M86)
 
+set(LLVM_TARGET_DEFINITIONS M86.td)
+
+tablegen(LLVM M86GenRegisterInfo.inc -gen-register-info)
+
+add_public_tablegen_target(M86CommonTableGen)
+
 add_llvm_target(M86CodeGen
   M86TargetMachine.cpp
+  M86RegisterInfo.cpp
 
   LINK_COMPONENTS
   CodeGen

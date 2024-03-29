@@ -11,6 +11,7 @@ Start of development [commit](https://github.com/sfbakturin/llvm-m86/commit/74e6
 List of stages:
 
 * Register architecture.
+* Added register's info for architecture.
 
 ## Getting the Source Code and Building LLVM
 
