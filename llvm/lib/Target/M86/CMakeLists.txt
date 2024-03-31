@@ -11,6 +11,7 @@ add_public_tablegen_target(M86CommonTableGen)
 add_llvm_target(M86CodeGen
   M86TargetMachine.cpp
   M86RegisterInfo.cpp
+  M86FrameLowering.cpp
   M86InstrInfo.cpp
   M86Subtarget.cpp
 
