@@ -3,7 +3,7 @@
 
 #define GET_REGINFO_HEADER
 #define GET_REGINFO_ENUM
-#include "M86GenRegisterInfo.inc"
+#include <M86GenRegisterInfo.inc>
 
 namespace llvm {
 

@@ -1,14 +1,14 @@
-#include "M86MCTargetDesc.h"
-#include "TargetInfo/M86TargetInfo.h"
+#include <M86MCTargetDesc.h>
+#include <TargetInfo/M86TargetInfo.h>
 #include <llvm/MC/MCInstrInfo.h>
 #include <llvm/MC/MCRegisterInfo.h>
 #include <llvm/MC/TargetRegistry.h>
 
 #define GET_REGINFO_MC_DESC
-#include "M86GenRegisterInfo.inc"
+#include <M86GenRegisterInfo.inc>
 
 #define GET_INSTRINFO_MC_DESC
-#include "M86GenInstrInfo.inc"
+#include <M86GenInstrInfo.inc>
 #include <llvm/Support/Compiler.h>
 #include <llvm/TargetParser/Triple.h>
 

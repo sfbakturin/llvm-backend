@@ -12,7 +12,7 @@ class M86ImmAsmOperand<string name> : AsmOperandClass
 	let DiagnosticType = !strconcat("Invalid", Name);
 }
 
-class M86ImmOperand : Operand<i32>, ImmLeaf<i32, [{ return isInt<24>(Imm); }]>
+def M86Imm : Operand<i32>, ImmLeaf<i32, [{ return isInt<24>(Imm); }]>
 {
 	let ParserMatchClass = M86ImmAsmOperand<"M86Imm">;
 	let EncoderMethod = "getImmOpValue";
@@ -26,11 +26,25 @@ class M86ImmOperand : Operand<i32>, ImmLeaf<i32, [{ return isInt<24>(Imm); }]>
 			}
 			return MCOp.isBareSymbolRef();
 	}];
-	let OperandType = "M86IMM";
+	let OperandType = "OPERAND_M86IMM";
 	let OperandNamespace = "M86Op";
 }
 
 // M86 instructions.
+
+//// Memory control.
+
+////// MOV ---> loading IMM value to R2 register.
+let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1 in
+def MOV : M86Instruction<
+	0x0,
+	(outs GPRRegClass:$src),
+	(ins M86Imm:$imm),
+	"MOV $imm",
+	[
+		(set GPRRegClass:$src, M86Imm:$imm)
+	]
+>;
 
 //// JMP ---> control flow
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1 in

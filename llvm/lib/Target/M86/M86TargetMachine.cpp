@@ -4,8 +4,8 @@
 #include <llvm/MC/TargetRegistry.h>
 #include <optional>
 
-#include "M86TargetMachine.h"
-#include "TargetInfo/M86TargetInfo.h"
+#include <M86TargetMachine.h>
+#include <TargetInfo/M86TargetInfo.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/Support/Compiler.h>
