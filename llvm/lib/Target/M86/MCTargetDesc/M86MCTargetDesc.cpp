@@ -1,9 +1,12 @@
+#include <M86ELFMCAsmInfo.h>
 #include <M86MCTargetDesc.h>
 #include <TargetInfo/M86TargetInfo.h>
+#include <llvm/MC/MCDwarf.h>
 #include <llvm/MC/MCInstrInfo.h>
 #include <llvm/MC/MCRegisterInfo.h>
 #include <llvm/MC/MCSubtargetInfo.h>
 #include <llvm/MC/TargetRegistry.h>
+#include <llvm/Support/ErrorHandling.h>
 
 #define GET_REGINFO_MC_DESC
 #include <M86GenRegisterInfo.inc>
@@ -35,9 +38,22 @@ static llvm::MCSubtargetInfo *createM86MCSubtargetInfo(const llvm::Triple &TT,
   return llvm::createM86MCSubtargetInfoImpl(TT, CPU, /*TuneCPU*/ CPU, FS);
 }
 
+static llvm::MCAsmInfo *
+createM86MCAsmInfo(const llvm::MCRegisterInfo &MRI, const llvm::Triple &TT,
+                   const llvm::MCTargetOptions &Options) {
+  llvm::MCAsmInfo *MAI = new llvm::M86ELFMCAsmInfo(TT);
+  unsigned SP = MRI.getDwarfRegNum(llvm::M86::R0, true);
+  llvm::MCCFIInstruction Inst =
+      llvm::MCCFIInstruction::cfiDefCfa(nullptr, SP, 0);
+  MAI->addInitialFrameState(Inst);
+  return MAI;
+}
+
 // We need to define this function for linking succeed
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86TargetMC() {
   llvm::Target &TheM86Target = llvm::getTheM86Target();
+  // Register the MC assembler info.
+  llvm::TargetRegistry::RegisterMCAsmInfo(TheM86Target, createM86MCAsmInfo);
   // Register the MC register info.
   llvm::TargetRegistry::RegisterMCRegInfo(TheM86Target,
                                           createM86MCRegisterInfo);
