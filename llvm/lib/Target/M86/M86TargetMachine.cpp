@@ -1,36 +1,36 @@
 #include <llvm/CodeGen/TargetLoweringObjectFileImpl.h>
-#include <llvm/CodeGen/TargetPassConfig.h>
-#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/MC/TargetRegistry.h>
 #include <optional>
 
+#include <M86.h>
+#include <M86Subtarget.h>
 #include <M86TargetMachine.h>
 #include <TargetInfo/M86TargetInfo.h>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/IR/Function.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/Support/Compiler.h>
+#include <llvm/Target/TargetLoweringObjectFile.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/TargetParser/Triple.h>
 #include <memory>
 #include <string>
 
+using namespace llvm;
+
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86Target() {
+  M86_DEBUG_FUNCTION();
+
   // Register the target.
   llvm::RegisterTargetMachine<llvm::M86TargetMachine> A(
       llvm::getTheM86Target());
 }
 
-static std::string computeDataLayout(const llvm::Triple &TT,
-                                     llvm::StringRef CPU,
-                                     const llvm::TargetOptions &Options,
-                                     bool IsLittle) {
-  std::string Ret = "e-m:e-p:32:32-i8:8:32-i16:16:32-i64:64-n32";
-  return Ret;
-}
-
 static llvm::Reloc::Model
 getEffectiveRelocModel(bool JIT, std::optional<llvm::Reloc::Model> RM) {
+  M86_DEBUG_FUNCTION();
+
   if (!RM || JIT)
     return llvm::Reloc::Static;
   return *RM;
@@ -41,24 +41,24 @@ llvm::M86TargetMachine::M86TargetMachine(
     llvm::StringRef FS, const llvm::TargetOptions &Options,
     std::optional<llvm::Reloc::Model> RM,
     std::optional<llvm::CodeModel::Model> CM, llvm::CodeGenOptLevel OL,
-    bool JIT, bool IsLittle)
-    : llvm::LLVMTargetMachine(T, computeDataLayout(TT, CPU, Options, IsLittle),
-                              TT, CPU, FS, Options,
-                              getEffectiveRelocModel(JIT, RM),
-                              getEffectiveCodeModel(CM, CodeModel::Small), OL),
-      TLOF(std::make_unique<llvm::TargetLoweringObjectFileELF>()) {
+    bool JIT)
+    : llvm::LLVMTargetMachine(
+          T, "e-m:e-p:32:32-i8:8:32-i16:16:32-i64:64-n32", TT, CPU, FS, Options,
+          llvm::Reloc::Static,
+          llvm::getEffectiveCodeModel(CM, llvm::CodeModel::Small), OL),
+      TLOF(std::make_unique<llvm::TargetLoweringObjectFileELF>()),
+      Subtarget(TT, std::string(CPU), std::string(FS), *this) {
   initAsmInfo();
 }
 
-llvm::M86TargetMachine::M86TargetMachine(
-    const llvm::Target &T, const llvm::Triple &TT, llvm::StringRef CPU,
-    llvm::StringRef FS, const llvm::TargetOptions &Options,
-    std::optional<llvm::Reloc::Model> RM,
-    std::optional<llvm::CodeModel::Model> CM, llvm::CodeGenOptLevel OL,
-    bool JIT)
-    : llvm::M86TargetMachine(T, TT, CPU, FS, Options, RM, CM, OL, JIT, true) {}
+llvm::TargetLoweringObjectFile *
+llvm::M86TargetMachine::getObjFileLowering() const {
+  M86_DEBUG_FUNCTION();
 
-llvm::TargetPassConfig *
-llvm::M86TargetMachine::createPassConfig(llvm::PassManagerBase &PM) {
-  return new llvm::TargetPassConfig(*this, PM);
+  return TLOF.get();
+}
+
+const llvm::M86Subtarget *
+llvm::M86TargetMachine::getSubtargetImpl(const llvm::Function &) const {
+  return &Subtarget;
 }

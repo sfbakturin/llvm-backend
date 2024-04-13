@@ -5,8 +5,6 @@
 // register name to register number.
 //
 
-#include <M86Info.h>
-
 #define GET_REGINFO_ENUM
 #include <M86GenRegisterInfo.inc>
 

@@ -1,5 +1,9 @@
-#include <M86ELFMCAsmInfo.h>
-#include <M86MCTargetDesc.h>
+#include <M86.h>
+#include <M86TargetStreamer.h>
+#include <MCTargetDesc/M86ELFMCAsmInfo.h>
+#include <MCTargetDesc/M86Info.h>
+#include <MCTargetDesc/M86InstPrinter.h>
+#include <MCTargetDesc/M86MCTargetDesc.h>
 #include <TargetInfo/M86TargetInfo.h>
 #include <llvm/MC/MCDwarf.h>
 #include <llvm/MC/MCInstrInfo.h>
@@ -7,6 +11,9 @@
 #include <llvm/MC/MCSubtargetInfo.h>
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/FormattedStream.h>
+
+using namespace llvm;
 
 #define GET_REGINFO_MC_DESC
 #include <M86GenRegisterInfo.inc>
@@ -19,14 +26,22 @@
 #define GET_SUBTARGETINFO_MC_DESC
 #include <M86GenSubtargetInfo.inc>
 #include <llvm/ADT/StringRef.h>
+#include <llvm/MC/MCAsmInfo.h>
+#include <llvm/MC/MCInstPrinter.h>
+#include <llvm/MC/MCStreamer.h>
+#include <llvm/MC/MCTargetOptions.h>
 
 static llvm::MCRegisterInfo *createM86MCRegisterInfo(const llvm::Triple &TT) {
+  M86_DEBUG_FUNCTION();
+
   llvm::MCRegisterInfo *X = new llvm::MCRegisterInfo();
   llvm::InitM86MCRegisterInfo(X, llvm::M86::R0);
   return X;
 }
 
 static llvm::MCInstrInfo *createM86MCInstrInfo() {
+  M86_DEBUG_FUNCTION();
+
   llvm::MCInstrInfo *X = new llvm::MCInstrInfo();
   llvm::InitM86MCInstrInfo(X);
   return X;
@@ -35,12 +50,16 @@ static llvm::MCInstrInfo *createM86MCInstrInfo() {
 static llvm::MCSubtargetInfo *createM86MCSubtargetInfo(const llvm::Triple &TT,
                                                        llvm::StringRef CPU,
                                                        llvm::StringRef FS) {
+  M86_DEBUG_FUNCTION();
+
   return llvm::createM86MCSubtargetInfoImpl(TT, CPU, /*TuneCPU*/ CPU, FS);
 }
 
 static llvm::MCAsmInfo *
 createM86MCAsmInfo(const llvm::MCRegisterInfo &MRI, const llvm::Triple &TT,
                    const llvm::MCTargetOptions &Options) {
+  M86_DEBUG_FUNCTION();
+
   llvm::MCAsmInfo *MAI = new llvm::M86ELFMCAsmInfo(TT);
   unsigned SP = MRI.getDwarfRegNum(llvm::M86::R0, true);
   llvm::MCCFIInstruction Inst =
@@ -49,8 +68,32 @@ createM86MCAsmInfo(const llvm::MCRegisterInfo &MRI, const llvm::Triple &TT,
   return MAI;
 }
 
+static llvm::MCInstPrinter *
+createM86MCInstPrinter(const llvm::Triple &T, unsigned SyntaxVariant,
+                       const llvm::MCAsmInfo &MAI, const llvm::MCInstrInfo &MII,
+                       const llvm::MCRegisterInfo &MRI) {
+  M86_DEBUG_FUNCTION();
+
+  return new llvm::M86InstPrinter(MAI, MII, MRI);
+}
+
+llvm::M86TargetStreamer::M86TargetStreamer(llvm::MCStreamer &MC)
+    : llvm::MCTargetStreamer(MC) {
+  M86_DEBUG_FUNCTION();
+}
+
+static llvm::MCTargetStreamer *
+createM86TargetAsmStreamer(llvm::MCStreamer &S, llvm::formatted_raw_ostream &OS,
+                           llvm::MCInstPrinter *InstPrint, bool isVerboseAsm) {
+  M86_DEBUG_FUNCTION();
+
+  return new llvm::M86TargetStreamer(S);
+}
+
 // We need to define this function for linking succeed
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86TargetMC() {
+  M86_DEBUG_FUNCTION();
+
   llvm::Target &TheM86Target = llvm::getTheM86Target();
   // Register the MC assembler info.
   llvm::TargetRegistry::RegisterMCAsmInfo(TheM86Target, createM86MCAsmInfo);
@@ -62,4 +105,10 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86TargetMC() {
   // Register the MC subtarget info.
   llvm::TargetRegistry::RegisterMCSubtargetInfo(TheM86Target,
                                                 createM86MCSubtargetInfo);
+  // Register the MC instruction printer.
+  llvm::TargetRegistry::RegisterMCInstPrinter(TheM86Target,
+                                              createM86MCInstPrinter);
+  // Register the assembler M86 streamer.
+  llvm::TargetRegistry::RegisterAsmTargetStreamer(TheM86Target,
+                                                  createM86TargetAsmStreamer);
 }

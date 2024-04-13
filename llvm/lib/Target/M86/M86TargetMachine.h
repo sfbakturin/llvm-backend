@@ -3,6 +3,7 @@
 
 #include <llvm/Target/TargetMachine.h>
 
+#include <M86Subtarget.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -24,21 +25,15 @@ public:
                    StringRef FS, const TargetOptions &Options,
                    std::optional<Reloc::Model> RM,
                    std::optional<CodeModel::Model> CM, CodeGenOptLevel OL,
-                   bool JIT, bool isLittle);
-
-  M86TargetMachine(const Target &T, const Triple &TT, StringRef CPU,
-                   StringRef FS, const TargetOptions &Options,
-                   std::optional<Reloc::Model> RM,
-                   std::optional<CodeModel::Model> CM, CodeGenOptLevel OL,
                    bool JIT);
 
   TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
-  TargetLoweringObjectFile *getObjFileLowering() const override {
-    return TLOF.get();
-  }
+  TargetLoweringObjectFile *getObjFileLowering() const override;
+  const M86Subtarget *getSubtargetImpl(const Function &) const override;
 
 private:
   std::unique_ptr<TargetLoweringObjectFile> TLOF;
+  M86Subtarget Subtarget;
 };
 
 } // end namespace llvm

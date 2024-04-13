@@ -1,0 +1,59 @@
+#include <M86.h>
+#include <M86AsmPrinter.h>
+#include <M86InstrLowering.h>
+#include <TargetInfo/M86TargetInfo.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/CodeGen/AsmPrinter.h>
+#include <llvm/CodeGen/MachineInstr.h>
+#include <llvm/CodeGen/MachineOperand.h>
+#include <llvm/MC/MCInst.h>
+#include <llvm/MC/MCStreamer.h>
+#include <llvm/MC/TargetRegistry.h>
+#include <llvm/Support/Compiler.h>
+#include <llvm/Target/TargetMachine.h>
+#include <memory>
+#include <type_traits>
+
+using namespace llvm;
+
+llvm::M86AsmPrinter::M86AsmPrinter(llvm::TargetMachine &TM,
+                                   std::unique_ptr<llvm::MCStreamer> Streamer)
+    : llvm::AsmPrinter(TM, std::move(Streamer)), STI(TM.getMCSubtargetInfo()) {
+  M86_DEBUG_FUNCTION();
+}
+
+llvm::StringRef llvm::M86AsmPrinter::getPassName() const {
+  M86_DEBUG_FUNCTION();
+
+  return "M86 Assembler Printer";
+}
+
+bool llvm::M86AsmPrinter::lowerOperand(const llvm::MachineOperand &MO,
+                                       llvm::MCOperand &MCOp) const {
+  M86_DEBUG_FUNCTION();
+
+  return llvm::LowerM86MachineOperandToMCOperand(MO, MCOp, *this);
+}
+
+// Simple pseudo-instructions have their lowering (with expansion to real
+// instructions) auto-generated.
+#include <M86GenMCPseudoLowering.inc>
+
+void llvm::M86AsmPrinter::emitInstruction(const llvm::MachineInstr *MI) {
+  M86_DEBUG_FUNCTION();
+
+  // Do any auto-generated pseudo lowerings.
+  if (emitPseudoExpansionLowering(*OutStreamer, MI))
+    return;
+
+  MCInst TmpInst;
+  if (!llvm::lowerM86MachineInstrToMCInst(MI, TmpInst, *this))
+    EmitToStreamer(*OutStreamer, TmpInst);
+}
+
+// Force static initialization.
+extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86AsmPrinter() {
+  M86_DEBUG_FUNCTION();
+
+  llvm::RegisterAsmPrinter<llvm::M86AsmPrinter> X(llvm::getTheM86Target());
+}

@@ -2,7 +2,7 @@
 include "M86InstrFormats.td"
 
 // M86 profiles and nodes.
-def M86RetNode : SDNode<"M86ISD:RET", SDTNone, [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
+def M86RetNode : SDNode<"M86ISD::RET", SDTNone, [SDNPHasChain, SDNPOptInGlue, SDNPVariadic]>;
 
 // M86 operands, complex patterns, transformations definitions.
 class M86ImmAsmOperand<string name> : AsmOperandClass
@@ -74,7 +74,7 @@ def JMP : M86Instruction<
 
 ////// RET             ---> return.
 let isBarrier = 1, isReturn = 1, isTerminator = 1 in
-def MicrocodeRET : M86Microcode<(outs), (ins), "# MicrocodeRET", [(M86RetNode)]>, PseudoInstExpansion<(JMP R14, R0, R0)>;
+def MicrocodeRET : M86Microcode<(outs), (ins), "# MicrocodeRET", [(M86RetNode)]>, PseudoInstExpansion<(JMP R14)>;
 
 //// Arithmetics. Basics.
 

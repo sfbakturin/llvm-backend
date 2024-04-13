@@ -6,9 +6,11 @@
 namespace llvm {
 
 namespace M86Op {
+
 enum OperandType : unsigned {
   OPERAND_M86IMM = MCOI::OPERAND_FIRST_TARGET,
 };
+
 } // namespace M86Op
 
 } // end namespace llvm
