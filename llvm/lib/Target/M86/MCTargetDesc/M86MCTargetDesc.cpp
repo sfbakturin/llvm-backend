@@ -111,4 +111,9 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86TargetMC() {
   // Register the assembler M86 streamer.
   llvm::TargetRegistry::RegisterAsmTargetStreamer(TheM86Target,
                                                   createM86TargetAsmStreamer);
+  // Register the MC code emitter.
+  llvm::TargetRegistry::RegisterMCCodeEmitter(TheM86Target,
+                                              createM86MCCodeEmitter);
+  // Register the assembler backend.
+  llvm::TargetRegistry::RegisterMCAsmBackend(TheM86Target, createM86AsmBackend);
 }

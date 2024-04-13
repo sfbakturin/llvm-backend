@@ -15,7 +15,7 @@ class M86ImmAsmOperand<string name> : AsmOperandClass
 def M86Imm : Operand<i32>, ImmLeaf<i32, [{ return isInt<24>(Imm); }]>
 {
 	let ParserMatchClass = M86ImmAsmOperand<"M86Imm">;
-	let EncoderMethod = "getImmOpValue";
+	let EncoderMethod = "getM86ImmOpValue";
 	let DecoderMethod = "decodeM86ImmOperand<24>";
 	let MCOperandPredicate =
 	[{
@@ -35,14 +35,15 @@ def M86Imm : Operand<i32>, ImmLeaf<i32, [{ return isInt<24>(Imm); }]>
 //// Memory control.
 
 ////// MOV imm        ---> store IMM value to R2 register.
-let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1 in
+let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1,
+RegSrc = 0, RegAcc = 0 in
 def MOV : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src),
-	(ins M86Imm:$imm),
-	"MOV $imm",
+	4,
+	(outs GPRRegClass:$RegDst),
+	(ins M86Imm:$Imm),
+	"MOV $Imm",
 	[
-		(set GPRRegClass:$src, M86Imm:$imm)
+		(set GPRRegClass:$RegDst, M86Imm:$Imm)
 	]
 >;
 
@@ -58,14 +59,15 @@ def MOV : M86Instruction<
 //// Control flow.
 
 ////// JMP src         ---> unconditional jump by offset address.
-let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1 in
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1,
+RegSrc = 0, RegAcc = 0, Imm = 0 in
 def JMP : M86Instruction<
-	0x0, // opcode
+	6, // opcode
 	(outs), // output
-	(ins GPRRegClass:$src), // input
-	"JMP $src", // asm string view
+	(ins GPRRegClass:$RegDst), // input
+	"JMP $RegDst", // asm string view
 	[
-		(brind GPRRegClass:$src)
+		(brind GPRRegClass:$RegDst)
 	] // dag pattern
 >;
 
@@ -79,112 +81,121 @@ def MicrocodeRET : M86Microcode<(outs), (ins), "# MicrocodeRET", [(M86RetNode)]>
 //// Arithmetics. Basics.
 
 ////// IADD src dst     ---> sum of two operands (as signed values), src += dst.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+RegAcc = 0, Imm = 0 in
 def IADD : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst),
-	"IADD $src $dst",
+	7,
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc),
+	"IADD $RegDst $RegSrc",
 	[
-		(set GPRRegClass:$src_out, (add GPRRegClass:$src, GPRRegClass:$dst))
+		(set GPRRegClass:$RegDst_out, (add GPRRegClass:$RegDst, GPRRegClass:$RegSrc))
 	]
 >; // TODO: make it working as signed value with changing flags
 
 ////// UADD src dst     ---> sum of two operands (as unsigned values), src += dst.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+RegAcc = 0, Imm = 0 in
 def UADD : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst),
-	"UADD $src $dst",
+	8,
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc),
+	"UADD $RegDst $RegSrc",
 	[
-		(set GPRRegClass:$src_out, (add GPRRegClass:$src, GPRRegClass:$dst))
+		(set GPRRegClass:$RegDst_out, (add GPRRegClass:$RegDst, GPRRegClass:$RegSrc))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 
 ////// IMUL src dst     ---> multiply of two operands (as signed values), src *= dst.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+RegAcc = 0, Imm = 0 in
 def IMUL : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst),
-	"IMUL $src $dst",
+	9,
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc),
+	"IMUL $RegDst $RegSrc",
 	[
-		(set GPRRegClass:$src_out, (mul GPRRegClass:$src, GPRRegClass:$dst))
+		(set GPRRegClass:$RegDst_out, (mul GPRRegClass:$RegDst, GPRRegClass:$RegSrc))
 	]
 >; // TODO: make it working as signed value with changing flags
 
 ////// UMUL src dst     ---> multiply of two operands (as unsigned values), src *= dst.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+RegAcc = 0, Imm = 0 in
 def UMUL : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst),
-	"UMUL $src $dst",
+	10,
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc),
+	"UMUL $RegDst $RegSrc",
 	[
-		(set GPRRegClass:$src_out, (mul GPRRegClass:$src, GPRRegClass:$dst))
+		(set GPRRegClass:$RegDst_out, (mul GPRRegClass:$RegDst, GPRRegClass:$RegSrc))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 
 ////// XOR src dst      ---> bitxor of two operands, src ^= dst.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+RegAcc = 0, Imm = 0 in
 def XOR : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst),
-	"XOR $src $dst",
+	11,
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc),
+	"XOR $RegDst $RegSrc",
 	[
-		(set GPRRegClass:$src_out, (xor GPRRegClass:$src, GPRRegClass:$dst))
+		(set GPRRegClass:$RegDst_out, (xor GPRRegClass:$RegDst, GPRRegClass:$RegSrc))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 
 ////// OR src dst       ---> bitand of two operands, src &= dst.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+RegAcc = 0, Imm = 0 in
 def OR : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst),
-	"OR $src $dst",
+	12,
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc),
+	"OR $RegDst $RegSrc",
 	[
-		(set GPRRegClass:$src_out, (or GPRRegClass:$src, GPRRegClass:$dst))
+		(set GPRRegClass:$RegDst_out, (or GPRRegClass:$RegDst, GPRRegClass:$RegSrc))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 
 //// Arithmetics. M86 extended.
 
 ////// EXOR src dst acc  ---> extended bitxor of two operands, src = dst ^ acc.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+Imm = 0 in
 def EXOR : M86Instruction<
-	0x0,
-	(outs GPRRegClass:$src),
-	(ins GPRRegClass:$dst, GPRRegClass:$acc),
-	"EXOR $src $dst $acc",
+	13,
+	(outs GPRRegClass:$RegDst),
+	(ins GPRRegClass:$RegSrc, GPRRegClass:$RegAcc),
+	"EXOR $RegDst $RegSrc $RegAcc",
 	[
-		(set GPRRegClass:$src, (xor GPRRegClass:$dst, GPRRegClass:$acc))
+		(set GPRRegClass:$RegDst, (xor GPRRegClass:$RegSrc, GPRRegClass:$RegAcc))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 
 ////// EUMUL src dst acc ---> extended multiply of two operands (as unsigned values), src = dst * acc.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+Imm = 0 in
 def EUMUL : M86Instruction<
 	0x0,
-	(outs GPRRegClass:$src),
-	(ins GPRRegClass:$dst, GPRRegClass:$acc),
-	"EUMUL $src $dst $acc",
+	(outs GPRRegClass:$RegDst),
+	(ins GPRRegClass:$RegSrc, GPRRegClass:$RegAcc),
+	"EUMUL $RegDst $RegSrc $RegAcc",
 	[
-		(set GPRRegClass:$src, (mul GPRRegClass:$dst, GPRRegClass:$acc))
+		(set GPRRegClass:$RegDst, (mul GPRRegClass:$RegSrc, GPRRegClass:$RegAcc))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 
 ////// EUADDUMUL src dst acc ---> extended add and multiply of two operands (as unsigned values), src += dst * acc.
-let isCommutable = 1, isReMaterializable = 0 in
+let isCommutable = 1, isReMaterializable = 0,
+Imm = 0 in
 def EUADDUMUL : M86Instruction<
 	0x0,
-	(outs GPRRegClass:$src_out),
-	(ins GPRRegClass:$src, GPRRegClass:$dst, GPRRegClass:$acc),
-	"EUADDUMUL $src $dst $acc",
+	(outs GPRRegClass:$RegDst_out),
+	(ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc, GPRRegClass:$RegAcc),
+	"EUADDUMUL $RegDst $RegSrc $RegAcc",
 	[
-		(set GPRRegClass:$src_out, (add GPRRegClass:$src, (mul GPRRegClass:$dst, GPRRegClass:$acc)))
+		(set GPRRegClass:$RegDst_out, (add GPRRegClass:$RegDst, (mul GPRRegClass:$RegSrc, GPRRegClass:$RegAcc)))
 	]
 >; // TODO: make it working as unsigned value with changing flags
 

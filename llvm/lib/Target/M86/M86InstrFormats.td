@@ -26,11 +26,11 @@ class M86Instruction<bits<8> op, dag outs, dag ins, string asmstr, list<dag> pat
 
 	field bits<32> Inst;
 
-	bits<8> Opcode  = op;
-	bits<4> RegDst = 0;
-	bits<4> RegSrc  = 0;
-	bits<4> RegAcc  = 0;
-	bits<24> Imm    = 0;
+	bits<8> Opcode = op;
+	bits<4> RegDst;
+	bits<4> RegSrc;
+	bits<4> RegAcc;
+	bits<24> Imm;
 
 	let Inst{31-24} = Opcode;
 	let Inst{23-20} = RegDst;

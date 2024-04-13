@@ -11,6 +11,7 @@ tablegen(LLVM M86GenCallingConv.inc -gen-callingconv)
 tablegen(LLVM M86GenMCPseudoLowering.inc -gen-pseudo-lowering)
 tablegen(LLVM M86GenAsmWriter.inc -gen-asm-writer)
 tablegen(LLVM M86GenDAGISel.inc -gen-dag-isel)
+tablegen(LLVM M86GenMCCodeEmitter.inc -gen-emitter)
 
 add_public_tablegen_target(M86CommonTableGen)
 
