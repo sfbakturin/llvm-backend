@@ -32,6 +32,21 @@ def M86Imm : Operand<i32>, ImmLeaf<i32, [{ return isInt<24>(Imm); }]>
 
 // M86 instructions.
 
+//// Graphics control.
+
+////// Put pixel.
+let Imm = 0 in
+def PP : M86Instruction<1, (outs), (ins GPRRegClass:$RegDst, GPRRegClass:$RegSrc, GPRRegClass:$RegAcc),
+                      "PP $RegDst $RegSrc $RegAcc", [(int_m86_putpixel GPRRegClass:$RegDst, GPRRegClass:$RegSrc, GPRRegClass:$RegAcc)]>;
+
+////// Flush.
+let RegDst = 0, RegSrc = 0, RegAcc = 0, Imm = 0 in
+def FLS : M86Instruction<2, (outs), (ins), "FLS", [(int_m86_flush)]>;
+
+////// Random.
+let RegDst = 0, RegSrc = 0, RegAcc = 0, Imm = 0 in
+def RND : M86Instruction<3, (outs), (ins), "RND", [(int_m86_sim_rand)]>;
+
 //// Memory control.
 
 ////// MOV imm        ---> store IMM value to R2 register.

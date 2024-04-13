@@ -26,6 +26,8 @@
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/GlobalValue.h>
 #include <llvm/IR/Instruction.h>
+#include <llvm/IR/Intrinsics.h>
+#include <llvm/IR/IntrinsicsM86.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
@@ -82,6 +84,7 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
   setOperationAction(llvm::ISD::BR_CC, MVT::i32, Custom);
 
   setOperationAction(llvm::ISD::FRAMEADDR, MVT::i32, Legal);
+  setOperationAction(llvm::ISD::INTRINSIC_VOID, MVT::i32, Custom);
 }
 
 const char *llvm::M86TargetLowering::getTargetNodeName(unsigned Opcode) const {

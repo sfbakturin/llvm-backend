@@ -1,0 +1,5 @@
+﻿BUILTIN(put_pixel, "vUiUiUi", "nc")
+BUILTIN(flush, "v", "nc")
+BUILTIN(sim_rand, "v", "nc")
+
+#undef BUILTIN
