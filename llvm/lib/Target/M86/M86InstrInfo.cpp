@@ -9,5 +9,6 @@ using namespace llvm;
 #define DEBUG_TYPE "M86-inst-info"
 
 llvm::M86InstrInfo::M86InstrInfo() : llvm::M86GenInstrInfo() {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }

@@ -7,7 +7,7 @@
 using namespace llvm;
 
 llvm::M86ELFMCAsmInfo::M86ELFMCAsmInfo(const llvm::Triple &TT) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   SupportsDebugInformation = false;
   Data16bitsDirective = "\t.word\t";
@@ -23,4 +23,6 @@ llvm::M86ELFMCAsmInfo::M86ELFMCAsmInfo(const llvm::Triple &TT) {
   ProtectedVisibilityAttr = llvm::MCSA_Invalid;
 
   ExceptionsType = llvm::ExceptionHandling::None;
+
+  M86_END_FUNCTION();
 }

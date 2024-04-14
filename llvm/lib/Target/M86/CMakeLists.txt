@@ -2,7 +2,7 @@ add_llvm_component_group(M86)
 
 set(LLVM_TARGET_DEFINITIONS M86.td)
 
-option(M86_DEBUG_START_FUNCTION "Prints function name of M86 arch that is called with filename and lineno" OFF)
+option(M86_DEBUG_PRINTOUT "Prints function name of M86 arch that is called with filename and lineno" OFF)
 
 tablegen(LLVM M86GenRegisterInfo.inc -gen-register-info)
 tablegen(LLVM M86GenInstrInfo.inc -gen-instr-info)
@@ -29,6 +29,20 @@ add_llvm_target(M86CodeGen
   M86ISelDagToDag.cpp
   M86ISelLowering.cpp
   M86PassConfig.cpp
+  M86.h
+  M86TargetMachine.h
+  M86RegisterInfo.h
+  M86FrameLowering.h
+  M86InstrInfo.h
+  M86Subtarget.h
+  M86AsmPrinter.h
+  M86FrameLowering.h
+  M86InstrLowering.h
+  M86MachineFunctionInfo.h
+  M86TargetStreamer.h
+  M86ISelDagToDag.h
+  M86ISelLowering.h
+  M86PassConfig.h
 
   LINK_COMPONENTS
   AsmPrinter

@@ -51,15 +51,15 @@ static const llvm::MCPhysReg ArgGPRs[] = {llvm::M86::R9, llvm::M86::R10,
 void llvm::M86TargetLowering::ReplaceNodeResults(
     llvm::SDNode *N, llvm::SmallVectorImpl<llvm::SDValue> &Results,
     llvm::SelectionDAG &DAG) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   llvm_unreachable("");
 }
 
 llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
                                            const llvm::M86Subtarget &STI)
     : TargetLowering(TM), STI(STI) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   addRegisterClass(llvm::MVT::i32, &llvm::M86::GPRRegClassRegClass);
 
@@ -85,17 +85,23 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
 
   setOperationAction(llvm::ISD::FRAMEADDR, MVT::i32, Legal);
   setOperationAction(llvm::ISD::INTRINSIC_VOID, MVT::i32, Custom);
+
+  M86_END_FUNCTION();
 }
 
 const char *llvm::M86TargetLowering::getTargetNodeName(unsigned Opcode) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   switch (Opcode) {
   case llvm::M86ISD::CALL:
+    M86_END_FUNCTION();
     return "M86ISD::CALL";
   case llvm::M86ISD::RET:
+    M86_END_FUNCTION();
     return "M86ISD::RET";
   }
+
+  M86_END_FUNCTION();
   return nullptr;
 }
 
@@ -110,8 +116,8 @@ const char *llvm::M86TargetLowering::getTargetNodeName(unsigned Opcode) const {
 //===----------------------------------------------------------------------===//
 
 static llvm::Align getPrefTypeAlign(llvm::EVT VT, llvm::SelectionDAG &DAG) {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return DAG.getDataLayout().getPrefTypeAlign(
       VT.getTypeForEVT(*DAG.getContext()));
 }
@@ -119,7 +125,7 @@ static llvm::Align getPrefTypeAlign(llvm::EVT VT, llvm::SelectionDAG &DAG) {
 llvm::SDValue llvm::M86TargetLowering::LowerCall(
     llvm::TargetLowering::CallLoweringInfo &CLI,
     llvm::SmallVectorImpl<llvm::SDValue> &InVals) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::SelectionDAG &DAG = CLI.DAG;
   llvm::SDLoc &DL = CLI.DL;
@@ -316,6 +322,8 @@ llvm::SDValue llvm::M86TargetLowering::LowerCall(
     InVals.push_back(RetValue);
   }
 
+  M86_END_FUNCTION();
+
   return Chain;
 }
 
@@ -337,7 +345,7 @@ static llvm::SDValue convertValVTToLocVT(llvm::SelectionDAG &DAG,
                                          const llvm::CCValAssign &VA,
                                          const llvm::SDLoc &DL,
                                          const llvm::M86Subtarget &Subtarget) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::EVT LocVT = VA.getLocVT();
 
@@ -354,6 +362,9 @@ static llvm::SDValue convertValVTToLocVT(llvm::SelectionDAG &DAG,
     Val = DAG.getNode(llvm::ISD::BITCAST, DL, LocVT, Val);
     break;
   }
+
+  M86_END_FUNCTION();
+
   return Val;
 }
 
@@ -364,7 +375,7 @@ static llvm::SDValue convertLocVTToValVT(llvm::SelectionDAG &DAG,
                                          const llvm::CCValAssign &VA,
                                          const llvm::SDLoc &DL,
                                          const llvm::M86Subtarget &Subtarget) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   if (VA.getValVT() == llvm::MVT::f32)
     llvm_unreachable("");
@@ -378,16 +389,18 @@ static llvm::SDValue convertLocVTToValVT(llvm::SelectionDAG &DAG,
     llvm_unreachable("");
     Val = DAG.getNode(llvm::ISD::BITCAST, DL, VA.getValVT(), Val);
   }
+
+  M86_END_FUNCTION();
+
   return Val;
 }
 
-// TODO: rewrite
 static llvm::SDValue unpackFromRegLoc(llvm::SelectionDAG &DAG,
                                       llvm::SDValue Chain,
                                       const llvm::CCValAssign &VA,
                                       const llvm::SDLoc &DL,
                                       const llvm::M86TargetLowering &TLI) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::MachineFunction &MF = DAG.getMachineFunction();
   llvm::MachineRegisterInfo &RegInfo = MF.getRegInfo();
@@ -398,8 +411,12 @@ static llvm::SDValue unpackFromRegLoc(llvm::SelectionDAG &DAG,
   RegInfo.addLiveIn(VA.getLocReg(), VReg);
   Val = DAG.getCopyFromReg(Chain, DL, VReg, LocVT);
 
-  if (VA.getLocInfo() == llvm::CCValAssign::Indirect)
+  if (VA.getLocInfo() == llvm::CCValAssign::Indirect) {
+    M86_END_FUNCTION();
     return Val;
+  }
+
+  M86_END_FUNCTION();
 
   return convertLocVTToValVT(DAG, Val, VA, DL, TLI.getSubtarget());
 }
@@ -410,7 +427,7 @@ static llvm::SDValue unpackFromMemLoc(llvm::SelectionDAG &DAG,
                                       llvm::SDValue Chain,
                                       const llvm::CCValAssign &VA,
                                       const llvm::SDLoc &DL) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::MachineFunction &MF = DAG.getMachineFunction();
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
@@ -437,6 +454,9 @@ static llvm::SDValue unpackFromMemLoc(llvm::SelectionDAG &DAG,
       ExtType, DL, LocVT, Chain, FIN,
       llvm::MachinePointerInfo::getFixedStack(DAG.getMachineFunction(), FI),
       ValVT);
+
+  M86_END_FUNCTION();
+
   return Val;
 }
 
@@ -446,7 +466,7 @@ llvm::SDValue llvm::M86TargetLowering::LowerFormalArguments(
     const llvm::SmallVectorImpl<llvm::ISD::InputArg> &Ins,
     const llvm::SDLoc &DL, llvm::SelectionDAG &DAG,
     llvm::SmallVectorImpl<llvm::SDValue> &InVals) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   switch (CallConv) {
   default:
@@ -559,6 +579,8 @@ llvm::SDValue llvm::M86TargetLowering::LowerFormalArguments(
     Chain = DAG.getNode(ISD::TokenFactor, DL, MVT::Other, OutChains);
   }
 
+  M86_END_FUNCTION();
+
   return Chain;
 }
 
@@ -570,14 +592,19 @@ bool llvm::M86TargetLowering::CanLowerReturn(
     llvm::CallingConv::ID CallConv, llvm::MachineFunction &MF, bool IsVarArg,
     const llvm::SmallVectorImpl<llvm::ISD::OutputArg> &Outs,
     llvm::LLVMContext &Context) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::SmallVector<llvm::CCValAssign, 16> RVLocs;
   llvm::CCState CCInfo(CallConv, IsVarArg, MF, RVLocs, Context);
-  if (!CCInfo.CheckReturn(Outs, M86CCRet))
+  if (!CCInfo.CheckReturn(Outs, M86CCRet)) {
+    M86_END_FUNCTION();
     return false;
+  }
   if (CCInfo.getStackSize() != 0 && IsVarArg)
     llvm_unreachable("");
+
+  M86_END_FUNCTION();
+
   return true;
 }
 
@@ -586,7 +613,7 @@ llvm::SDValue llvm::M86TargetLowering::LowerReturn(
     const llvm::SmallVectorImpl<llvm::ISD::OutputArg> &Outs,
     const llvm::SmallVectorImpl<llvm::SDValue> &OutVals, const SDLoc &DL,
     llvm::SelectionDAG &DAG) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   const MachineFunction &MF = DAG.getMachineFunction();
   const M86Subtarget &STI = MF.getSubtarget<M86Subtarget>();
@@ -622,6 +649,9 @@ llvm::SDValue llvm::M86TargetLowering::LowerReturn(
   if (Glue.getNode()) {
     RetOps.push_back(Glue);
   }
+
+  M86_END_FUNCTION();
+
   return DAG.getNode(llvm::M86ISD::RET, DL, MVT::Other, RetOps);
 }
 
@@ -632,8 +662,8 @@ llvm::SDValue llvm::M86TargetLowering::LowerReturn(
 llvm::SDValue
 llvm::M86TargetLowering::PerformDAGCombine(llvm::SDNode *N,
                                            DAGCombinerInfo &DCI) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return {};
 }
 
@@ -646,14 +676,18 @@ llvm::M86TargetLowering::PerformDAGCombine(llvm::SDNode *N,
 bool llvm::M86TargetLowering::isLegalAddressingMode(
     const llvm::DataLayout &DL, const AddrMode &AM, llvm::Type *Ty, unsigned AS,
     llvm::Instruction *I) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   // No global is ever allowed as a base.
-  if (AM.BaseGV)
+  if (AM.BaseGV) {
+    M86_END_FUNCTION();
     return false;
+  }
 
-  if (!isInt<llvm::M86_OPERAND_MAXIMUM_SIZE>(AM.BaseOffs))
+  if (!isInt<llvm::M86_OPERAND_MAXIMUM_SIZE>(AM.BaseOffs)) {
+    M86_END_FUNCTION();
     return false;
+  }
 
   switch (AM.Scale) {
   case 0: // "r+i" or just "i", depending on HasBaseReg.
@@ -661,10 +695,14 @@ bool llvm::M86TargetLowering::isLegalAddressingMode(
   case 1:
     if (!AM.HasBaseReg) // allow "r+i".
       break;
+    M86_END_FUNCTION();
     return false; // disallow "r+r" or "r+r+i".
   default:
+    M86_END_FUNCTION();
     return false;
   }
+
+  M86_END_FUNCTION();
 
   return true;
 }

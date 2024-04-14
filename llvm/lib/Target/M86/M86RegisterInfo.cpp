@@ -36,19 +36,20 @@ using namespace llvm;
 
 llvm::M86RegisterInfo::M86RegisterInfo()
     : llvm::M86GenRegisterInfo(llvm::M86::R0) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }
 
 const llvm::MCPhysReg *llvm::M86RegisterInfo::getCalleeSavedRegs(
     const llvm::MachineFunction *MF) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return llvm::CSR_M86_SaveList;
 }
 
 llvm::BitVector
 llvm::M86RegisterInfo::getReservedRegs(const llvm::MachineFunction &MF) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   const llvm::M86FrameLowering *TFI = getFrameLowering(MF);
 
@@ -58,20 +59,23 @@ llvm::M86RegisterInfo::getReservedRegs(const llvm::MachineFunction &MF) const {
   if (TFI->hasFP(MF)) {
     Reserved.set(llvm::M86::R2);
   }
+
+  M86_END_FUNCTION();
+
   return Reserved;
 }
 
 bool llvm::M86RegisterInfo::requiresRegisterScavenging(
     const llvm::MachineFunction &MF) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return false;
 }
 
 bool llvm::M86RegisterInfo::eliminateFrameIndex(
     llvm::MachineBasicBlock::iterator II, int SPAdj, unsigned FIOperandNum,
     llvm::RegScavenger *RS) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   assert(SPAdj == 0 && "Unexpected non-zero SPAdj value");
 
@@ -92,21 +96,27 @@ bool llvm::M86RegisterInfo::eliminateFrameIndex(
 
   MI.getOperand(FIOperandNum).ChangeToRegister(FrameReg, false, false, false);
   MI.getOperand(FIOperandNum + 1).ChangeToImmediate(Offset);
+
+  M86_END_FUNCTION();
+
   return false;
 }
 
 llvm::Register
 llvm::M86RegisterInfo::getFrameRegister(const llvm::MachineFunction &MF) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   const llvm::TargetFrameLowering *TFI = getFrameLowering(MF);
+
+  M86_END_FUNCTION();
+
   return TFI->hasFP(MF) ? llvm::M86::R2 : llvm::M86::R1;
 }
 
 const std::uint32_t *
 llvm::M86RegisterInfo::getCallPreservedMask(const llvm::MachineFunction &MF,
                                             llvm::CallingConv::ID CC) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return llvm::CSR_M86_RegMask;
 }

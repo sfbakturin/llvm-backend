@@ -1,16 +1,5 @@
-﻿//===-- SimMCCodeEmitter.cpp - Convert Sim code to machine code -------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-//
-// This file implements the SimMCCodeEmitter class.
-//
-//===----------------------------------------------------------------------===//
-
-#include <M86.h>
+﻿#include <M86.h>
+#include <MCTargetDesc/M86MCCodeEmitter.h>
 #include <MCTargetDesc/M86MCTargetDesc.h>
 #include <cassert>
 #include <cstdint>
@@ -41,96 +30,89 @@ using namespace llvm;
 
 STATISTIC(MCNumEmitted, "Number of MC instructions emitted");
 
-namespace {
+llvm::M86MCCodeEmitter::M86MCCodeEmitter(const llvm::MCInstrInfo &,
+                                         llvm::MCContext &ctx)
+    : Ctx(ctx) {}
 
-class M86MCCodeEmitter : public MCCodeEmitter {
-  MCContext &Ctx;
+void llvm::M86MCCodeEmitter::encodeInstruction(
+    const llvm::MCInst &MI, llvm::SmallVectorImpl<char> &CB,
+    llvm::SmallVectorImpl<llvm::MCFixup> &Fixups,
+    const llvm::MCSubtargetInfo &STI) const {
+  M86_START_FUNCTION();
 
-public:
-  M86MCCodeEmitter(const MCInstrInfo &, MCContext &ctx) : Ctx(ctx) {}
-  M86MCCodeEmitter(const M86MCCodeEmitter &) = delete;
-  M86MCCodeEmitter &operator=(const M86MCCodeEmitter &) = delete;
-  ~M86MCCodeEmitter() override = default;
-
-  void encodeInstruction(const MCInst &MI, SmallVectorImpl<char> &CB,
-                         SmallVectorImpl<MCFixup> &Fixups,
-                         const MCSubtargetInfo &STI) const override;
-
-  // getBinaryCodeForInstr - TableGen'erated function for getting the
-  // binary encoding for an instruction.
-  uint64_t getBinaryCodeForInstr(const MCInst &MI,
-                                 SmallVectorImpl<MCFixup> &Fixups,
-                                 const MCSubtargetInfo &STI) const;
-
-  /// getMachineOpValue - Return binary encoding of operand. If the machine
-  /// operand requires relocation, record the relocation and return zero.
-  unsigned getMachineOpValue(const MCInst &MI, const MCOperand &MO,
-                             SmallVectorImpl<MCFixup> &Fixups,
-                             const MCSubtargetInfo &STI) const;
-  unsigned getM86ImmOpValue(const MCInst &MI, unsigned OpNo,
-                            SmallVectorImpl<MCFixup> &Fixups,
-                            const MCSubtargetInfo &STI) const;
-};
-
-} // end anonymous namespace
-
-void M86MCCodeEmitter::encodeInstruction(const MCInst &MI,
-                                         SmallVectorImpl<char> &CB,
-                                         SmallVectorImpl<MCFixup> &Fixups,
-                                         const MCSubtargetInfo &STI) const {
-  M86_DEBUG_FUNCTION();
   unsigned Bits = getBinaryCodeForInstr(MI, Fixups, STI);
-  support::endian::write(CB, Bits, llvm::endianness::little);
+  llvm::support::endian::write(CB, Bits, llvm::endianness::little);
 
   ++MCNumEmitted; // Keep track of the # of mi's emitted.
+
+  M86_END_FUNCTION();
 }
 
-unsigned M86MCCodeEmitter::getMachineOpValue(const MCInst &MI,
-                                             const MCOperand &MO,
-                                             SmallVectorImpl<MCFixup> &Fixups,
-                                             const MCSubtargetInfo &STI) const {
-  M86_DEBUG_FUNCTION();
-  if (MO.isReg())
-    return Ctx.getRegisterInfo()->getEncodingValue(MO.getReg());
+unsigned llvm::M86MCCodeEmitter::getMachineOpValue(
+    const llvm::MCInst &MI, const llvm::MCOperand &MO,
+    llvm::SmallVectorImpl<llvm::MCFixup> &Fixups,
+    const llvm::MCSubtargetInfo &STI) const {
+  M86_START_FUNCTION();
 
-  if (MO.isImm())
+  if (MO.isReg()) {
+    M86_END_FUNCTION();
+    return Ctx.getRegisterInfo()->getEncodingValue(MO.getReg());
+  }
+
+  if (MO.isImm()) {
+    M86_END_FUNCTION();
     return MO.getImm();
+  }
 
   assert(MO.isExpr());
-  const MCExpr *Expr = MO.getExpr();
+  const llvm::MCExpr *Expr = MO.getExpr();
 
-  int64_t Res;
-  if (Expr->evaluateAsAbsolute(Res))
+  std::int64_t Res;
+  if (Expr->evaluateAsAbsolute(Res)) {
+    M86_END_FUNCTION();
     return Res;
+  }
 
   llvm_unreachable("Unhandled expression!");
+
+  M86_END_FUNCTION();
+
   return 0;
 }
 
-unsigned M86MCCodeEmitter::getM86ImmOpValue(const MCInst &MI, unsigned OpNo,
-                                            SmallVectorImpl<MCFixup> &Fixups,
-                                            const MCSubtargetInfo &STI) const {
-  M86_DEBUG_FUNCTION();
-  const MCOperand &MO = MI.getOperand(OpNo);
-  if (MO.isImm())
+unsigned llvm::M86MCCodeEmitter::getM86ImmOpValue(
+    const llvm::MCInst &MI, unsigned OpNo,
+    llvm::SmallVectorImpl<llvm::MCFixup> &Fixups,
+    const llvm::MCSubtargetInfo &STI) const {
+  M86_START_FUNCTION();
+
+  const llvm::MCOperand &MO = MI.getOperand(OpNo);
+  if (MO.isImm()) {
+    M86_END_FUNCTION();
     return MO.getImm();
+  }
 
   assert(MO.isExpr() &&
          "getM86ImmOpValue expects only expressions or an immediate");
 
-  const MCExpr *Expr = MO.getExpr();
+  const llvm::MCExpr *Expr = MO.getExpr();
 
   // Constant value, no fixup is needed
-  if (const MCConstantExpr *CE = dyn_cast<MCConstantExpr>(Expr))
+  if (const llvm::MCConstantExpr *CE = dyn_cast<MCConstantExpr>(Expr)) {
+    M86_END_FUNCTION();
     return CE->getValue();
+  }
+
+  M86_END_FUNCTION();
 
   return 0;
 }
 
-#include "M86GenMCCodeEmitter.inc"
+#include <M86GenMCCodeEmitter.inc>
 
-MCCodeEmitter *llvm::createM86MCCodeEmitter(const MCInstrInfo &MCII,
-                                            MCContext &Ctx) {
-  M86_DEBUG_FUNCTION();
-  return new M86MCCodeEmitter(MCII, Ctx);
+MCCodeEmitter *llvm::createM86MCCodeEmitter(const llvm::MCInstrInfo &MCII,
+                                            llvm::MCContext &Ctx) {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
+  return new llvm::M86MCCodeEmitter(MCII, Ctx);
 }

@@ -1,12 +1,5 @@
-﻿//===-- SimELFObjectWriter.cpp - Sim ELF Writer -----------------------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//===----------------------------------------------------------------------===//
-
-#include <M86.h>
+﻿#include <M86.h>
+#include <MCTargetDesc/M86ELFObjectWriter.h>
 #include <MCTargetDesc/M86MCTargetDesc.h>
 #include <cstdint>
 #include <llvm/ADT/STLExtras.h>
@@ -22,46 +15,41 @@
 
 using namespace llvm;
 
-namespace {
-class M86ELFObjectWriter : public MCELFObjectTargetWriter {
-public:
-  M86ELFObjectWriter(bool Is64Bit, uint8_t OSABI)
-      : MCELFObjectTargetWriter(Is64Bit, OSABI, ELF::EM_M86,
-                                /*HasRelocationAddend*/ true) {
-    M86_DEBUG_FUNCTION();
+llvm::M86ELFObjectWriter::M86ELFObjectWriter(bool Is64Bit, std::uint8_t OSABI)
+    : llvm::MCELFObjectTargetWriter(Is64Bit, OSABI, llvm::ELF::EM_M86,
+                                    /*HasRelocationAddend*/ true) {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
+}
+
+unsigned llvm::M86ELFObjectWriter::getRelocType(llvm::MCContext &Ctx,
+                                                const llvm::MCValue &Target,
+                                                const llvm::MCFixup &Fixup,
+                                                bool IsPCRel) const {
+  M86_START_FUNCTION();
+
+  llvm::MCFixupKind Kind = Fixup.getKind();
+  if (Kind >= FirstLiteralRelocationKind) {
+    M86_END_FUNCTION();
+    return Kind - FirstLiteralRelocationKind;
   }
 
-  ~M86ELFObjectWriter() override = default;
-
-protected:
-  unsigned getRelocType(MCContext &Ctx, const MCValue &Target,
-                        const MCFixup &Fixup, bool IsPCRel) const override;
-
-  bool needsRelocateWithSymbol(const MCValue &Val, const MCSymbol &Sym,
-                               unsigned Type) const override;
-};
-} // namespace
-
-unsigned M86ELFObjectWriter::getRelocType(MCContext &Ctx, const MCValue &Target,
-                                          const MCFixup &Fixup,
-                                          bool IsPCRel) const {
-  M86_DEBUG_FUNCTION();
-  MCFixupKind Kind = Fixup.getKind();
-  if (Kind >= FirstLiteralRelocationKind)
-    return Kind - FirstLiteralRelocationKind;
+  M86_END_FUNCTION();
 
   llvm_unreachable("Unimplemented fixup -> relocation");
 }
 
-bool M86ELFObjectWriter::needsRelocateWithSymbol(const MCValue &,
-                                                 const MCSymbol &,
-                                                 unsigned Type) const {
-  M86_DEBUG_FUNCTION();
+bool llvm::M86ELFObjectWriter::needsRelocateWithSymbol(const llvm::MCValue &,
+                                                       const llvm::MCSymbol &,
+                                                       unsigned Type) const {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return false;
 }
 
-std::unique_ptr<MCObjectTargetWriter>
-llvm::createM86ELFObjectWriter(bool Is64Bit, uint8_t OSABI) {
-  M86_DEBUG_FUNCTION();
-  return std::make_unique<M86ELFObjectWriter>(Is64Bit, OSABI);
+std::unique_ptr<llvm::MCObjectTargetWriter>
+llvm::createM86ELFObjectWriter(bool Is64Bit, std::uint8_t OSABI) {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
+  return std::make_unique<llvm::M86ELFObjectWriter>(Is64Bit, OSABI);
 }

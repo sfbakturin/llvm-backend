@@ -18,18 +18,18 @@ char llvm::M86DAGToDAGISel::ID = 0;
 
 llvm::M86DAGToDAGISel::M86DAGToDAGISel(llvm::M86TargetMachine &tm)
     : llvm::SelectionDAGISel(ID, tm) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 }
 
 bool llvm::M86DAGToDAGISel::runOnMachineFunction(llvm::MachineFunction &MF) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   Subtarget = &MF.getSubtarget<llvm::M86Subtarget>();
   return llvm::SelectionDAGISel::runOnMachineFunction(MF);
 }
 
 llvm::StringRef llvm::M86DAGToDAGISel::getPassName() const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   return "M86 DAG->DAG Pattern Instruction Selection";
 }
@@ -37,13 +37,13 @@ llvm::StringRef llvm::M86DAGToDAGISel::getPassName() const {
 /// This pass converts a legalized DAG into a Sim-specific DAG, ready for
 /// instruction scheduling.
 llvm::FunctionPass *llvm::createM86ISelDag(llvm::M86TargetMachine &TM) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   return new llvm::M86DAGToDAGISel(TM);
 }
 
 void llvm::M86DAGToDAGISel::Select(llvm::SDNode *Node) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   if (Node->isMachineOpcode()) {
     LLVM_DEBUG(llvm::dbgs() << "== "; Node->dump(CurDAG); llvm::dbgs() << "\n");

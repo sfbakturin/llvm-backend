@@ -14,7 +14,7 @@ using namespace llvm;
 static llvm::MCOperand lowerSymbolOperand(const llvm::MachineOperand &MO,
                                           llvm::MCSymbol *Sym,
                                           const llvm::AsmPrinter &AP) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::MCContext &Ctx = AP.OutContext;
 
@@ -26,21 +26,24 @@ static llvm::MCOperand lowerSymbolOperand(const llvm::MachineOperand &MO,
         ME, llvm::MCConstantExpr::create(MO.getOffset(), Ctx), Ctx);
   }
 
+  M86_END_FUNCTION();
+
   return llvm::MCOperand::createExpr(ME);
 }
 
 bool llvm::LowerM86MachineOperandToMCOperand(const llvm::MachineOperand &MO,
                                              llvm::MCOperand &MCOp,
                                              const llvm::AsmPrinter &AP) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   switch (MO.getType()) {
   default:
     llvm::report_fatal_error(
-        "LowerSimMachineInstrToMCInst: unknown operand type");
+        "LowerM86MachineInstrToMCInst: unknown operand type");
   case llvm::MachineOperand::MO_Register: {
     // Ignore all implicit register operands.
     if (MO.isImplicit()) {
+      M86_END_FUNCTION();
       return false;
     }
     MCOp = llvm::MCOperand::createReg(MO.getReg());
@@ -48,6 +51,7 @@ bool llvm::LowerM86MachineOperandToMCOperand(const llvm::MachineOperand &MO,
   }
   case llvm::MachineOperand::MO_RegisterMask: {
     // Regmasks are like implicit defs.
+    M86_END_FUNCTION();
     return false;
   }
   case llvm::MachineOperand::MO_Immediate: {
@@ -81,13 +85,16 @@ bool llvm::LowerM86MachineOperandToMCOperand(const llvm::MachineOperand &MO,
     break;
   }
   }
+
+  M86_END_FUNCTION();
+
   return true;
 }
 
 bool llvm::lowerM86MachineInstrToMCInst(const llvm::MachineInstr *MI,
                                         llvm::MCInst &OutMI,
                                         llvm::AsmPrinter &AP) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   OutMI.setOpcode(MI->getOpcode());
 
@@ -96,5 +103,8 @@ bool llvm::lowerM86MachineInstrToMCInst(const llvm::MachineInstr *MI,
     if (llvm::LowerM86MachineOperandToMCOperand(MO, MCOp, AP))
       OutMI.addOperand(MCOp);
   }
+
+  M86_END_FUNCTION();
+
   return false;
 }

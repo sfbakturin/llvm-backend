@@ -10,25 +10,29 @@ using namespace llvm;
 llvm::M86PassConfig::M86PassConfig(llvm::M86TargetMachine &TM,
                                    llvm::PassManagerBase &PM)
     : llvm::TargetPassConfig(TM, PM) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }
 
 llvm::M86TargetMachine &llvm::M86PassConfig::getM86TargetMachine() const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return getTM<llvm::M86TargetMachine>();
 }
 
 bool llvm::M86PassConfig::addInstSelector() {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   addPass(llvm::createM86ISelDag(getM86TargetMachine()));
+
+  M86_END_FUNCTION();
+
   return false;
 }
 
 llvm::TargetPassConfig *
 llvm::M86TargetMachine::createPassConfig(llvm::PassManagerBase &PM) {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return new llvm::M86PassConfig(*this, PM);
 }

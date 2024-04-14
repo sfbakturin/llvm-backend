@@ -20,19 +20,26 @@
 using namespace llvm;
 
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86Target() {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   // Register the target.
   llvm::RegisterTargetMachine<llvm::M86TargetMachine> A(
       llvm::getTheM86Target());
+
+  M86_END_FUNCTION();
 }
 
 static llvm::Reloc::Model
 getEffectiveRelocModel(bool JIT, std::optional<llvm::Reloc::Model> RM) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
-  if (!RM || JIT)
+  if (!RM || JIT) {
+    M86_END_FUNCTION();
     return llvm::Reloc::Static;
+  }
+
+  M86_END_FUNCTION();
+
   return *RM;
 }
 
@@ -48,17 +55,21 @@ llvm::M86TargetMachine::M86TargetMachine(
           llvm::getEffectiveCodeModel(CM, llvm::CodeModel::Small), OL),
       TLOF(std::make_unique<llvm::TargetLoweringObjectFileELF>()),
       Subtarget(TT, std::string(CPU), std::string(FS), *this) {
+  M86_START_FUNCTION();
   initAsmInfo();
+  M86_END_FUNCTION();
 }
 
 llvm::TargetLoweringObjectFile *
 llvm::M86TargetMachine::getObjFileLowering() const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return TLOF.get();
 }
 
 const llvm::M86Subtarget *
 llvm::M86TargetMachine::getSubtargetImpl(const llvm::Function &) const {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return &Subtarget;
 }

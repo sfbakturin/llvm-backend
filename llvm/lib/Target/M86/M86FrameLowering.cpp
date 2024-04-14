@@ -33,22 +33,25 @@ llvm::M86FrameLowering::M86FrameLowering(const llvm::M86Subtarget &STI)
     : llvm::TargetFrameLowering(llvm::TargetFrameLowering::StackGrowsDown,
                                 llvm::Align(4), 0),
       STI(STI) {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }
 
 void llvm::M86FrameLowering::emitPrologue(llvm::MachineFunction &MF,
                                           llvm::MachineBasicBlock &MBB) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }
 void llvm::M86FrameLowering::emitEpilogue(llvm::MachineFunction &MF,
                                           llvm::MachineBasicBlock &MBB) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }
 
 void llvm::M86FrameLowering::determineCalleeSaves(
     llvm::MachineFunction &MF, llvm::BitVector &SavedRegs,
     llvm::RegScavenger *RS) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   llvm::TargetFrameLowering::determineCalleeSaves(MF, SavedRegs, RS);
   // Unconditionally spill RA and FP only if the function uses a frame
@@ -57,16 +60,20 @@ void llvm::M86FrameLowering::determineCalleeSaves(
     SavedRegs.set(llvm::M86::R0);
     SavedRegs.set(llvm::M86::R2);
   }
+
+  M86_END_FUNCTION();
 }
 
 bool llvm::M86FrameLowering::spillCalleeSavedRegisters(
     llvm::MachineBasicBlock &MBB, llvm::MachineBasicBlock::iterator MI,
     llvm::ArrayRef<llvm::CalleeSavedInfo> CSI,
     const llvm::TargetRegisterInfo *TRI) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
-  if (CSI.empty())
+  if (CSI.empty()) {
+    M86_END_FUNCTION();
     return true;
+  }
 
   llvm::MachineFunction *MF = MBB.getParent();
   const llvm::TargetInstrInfo &TII = *MF->getSubtarget().getInstrInfo();
@@ -79,6 +86,8 @@ bool llvm::M86FrameLowering::spillCalleeSavedRegisters(
                             RC, TRI, 0);
   }
 
+  M86_END_FUNCTION();
+
   return true;
 }
 
@@ -86,10 +95,12 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
     llvm::MachineBasicBlock &MBB, llvm::MachineBasicBlock::iterator MI,
     llvm::MutableArrayRef<llvm::CalleeSavedInfo> CSI,
     const llvm::TargetRegisterInfo *TRI) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
-  if (CSI.empty())
+  if (CSI.empty()) {
+    M86_END_FUNCTION();
     return true;
+  }
 
   llvm::MachineFunction *MF = MBB.getParent();
   const llvm::TargetInstrInfo &TII = *MF->getSubtarget().getInstrInfo();
@@ -103,15 +114,20 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
     assert(MI != MBB.begin() && "loadRegFromStackSlot didn't insert any code!");
   }
 
+  M86_END_FUNCTION();
+
   return true;
 }
 
 bool llvm::M86FrameLowering::hasFP(const llvm::MachineFunction &MF) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   const llvm::TargetRegisterInfo *RegInfo = MF.getSubtarget().getRegisterInfo();
 
   const llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
+
+  M86_END_FUNCTION();
+
   return MF.getTarget().Options.DisableFramePointerElim(
              MF) || // -fomit-frame-pointer
          RegInfo->hasStackRealignment(MF) ||
@@ -120,7 +136,7 @@ bool llvm::M86FrameLowering::hasFP(const llvm::MachineFunction &MF) const {
 
 llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
     const llvm::MachineFunction &MF, int FI, llvm::Register &FrameReg) const {
-  M86_DEBUG_FUNCTION();
+  M86_START_FUNCTION();
 
   const llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
   const llvm::TargetRegisterInfo *RI = MF.getSubtarget().getRegisterInfo();
@@ -156,6 +172,8 @@ llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
     }
   }
 
+  M86_END_FUNCTION();
+
   return llvm::StackOffset::getFixed(Offset);
 }
 
@@ -165,15 +183,15 @@ llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
 // Let eliminateCallFramePseudoInstr preserve stack space for it.
 bool llvm::M86FrameLowering::hasReservedCallFrame(
     const llvm::MachineFunction &MF) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return !MF.getFrameInfo().hasVarSizedObjects();
 }
 
 void llvm::M86FrameLowering::adjustStackToMatchRecords(
     llvm::MachineBasicBlock &MBB, llvm::MachineBasicBlock::iterator MBBI,
     bool Allocate) const {
-  M86_DEBUG_FUNCTION();
-
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   llvm_unreachable("");
 }
