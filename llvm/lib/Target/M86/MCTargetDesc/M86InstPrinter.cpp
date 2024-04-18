@@ -55,6 +55,24 @@ void llvm::M86InstPrinter::printInst(const llvm::MCInst *MI, uint64_t Address,
   M86_END_FUNCTION();
 }
 
+void llvm::M86InstPrinter::printBranchOperand(const llvm::MCInst *MI,
+                                              std::uint64_t Address,
+                                              unsigned OpNo,
+                                              llvm::raw_ostream &O) {
+  M86_START_FUNCTION();
+  const llvm::MCOperand &MO = MI->getOperand(OpNo);
+  if (!MO.isImm())
+    return printOperand(MI, OpNo, O);
+
+  if (PrintBranchImmAsAddress) {
+    std::uint32_t Target = Address + MO.getImm();
+    O << formatHex(static_cast<std::uint64_t>(Target));
+  } else {
+    O << MO.getImm();
+  }
+  M86_END_FUNCTION();
+}
+
 void llvm::M86InstPrinter::printOperand(const llvm::MCInst *MI, int OpNo,
                                         llvm::raw_ostream &O) {
   M86_START_FUNCTION();

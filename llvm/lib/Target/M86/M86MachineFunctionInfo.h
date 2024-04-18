@@ -32,8 +32,6 @@ public:
   unsigned getReturnStackOffset() const;
 
 private:
-  virtual void anchor();
-
   bool ReturnStackOffsetSet = false;
   unsigned ReturnStackOffset = -1U;
 

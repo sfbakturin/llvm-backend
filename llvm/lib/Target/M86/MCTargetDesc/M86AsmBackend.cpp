@@ -1,6 +1,7 @@
 ﻿#include <M86.h>
 #include <MCTargetDesc/M86AsmBackend.h>
 #include <MCTargetDesc/M86ELFAsmBackend.h>
+#include <MCTargetDesc/M86FixupKinds.h>
 #include <MCTargetDesc/M86MCTargetDesc.h>
 #include <cstdint>
 #include <llvm/ADT/ArrayRef.h>
@@ -34,7 +35,35 @@ llvm::M86AsmBackend::M86AsmBackend(const llvm::Target &T)
 unsigned llvm::M86AsmBackend::getNumFixupKinds() const {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
-  return 0;
+  return llvm::M86::Fixups::NumTargetFixupKinds;
+}
+
+const llvm::MCFixupKindInfo &
+llvm::M86AsmBackend::getFixupKindInfo(llvm::MCFixupKind Kind) const {
+  M86_START_FUNCTION();
+
+  const static llvm::MCFixupKindInfo
+      InfosLE[llvm::M86::Fixups::NumTargetFixupKinds] = {
+          // name      offset bits  flags
+          {"FIXUP_M86_PC16", 0, 16, llvm::MCFixupKindInfo::FKF_IsPCRel},
+      };
+
+  // Fixup kinds from .reloc directive are like R_SPARC_NONE. They do
+  // not require any extra processing.
+  if (Kind >= FirstLiteralRelocationKind) {
+    M86_END_FUNCTION();
+    return llvm::MCAsmBackend::getFixupKindInfo(FK_NONE);
+  }
+
+  if (Kind < FirstTargetFixupKind) {
+    M86_END_FUNCTION();
+    return llvm::MCAsmBackend::getFixupKindInfo(Kind);
+  }
+
+  assert(unsigned(Kind - FirstTargetFixupKind) < getNumFixupKinds() &&
+         "Invalid kind!");
+  M86_END_FUNCTION();
+  return InfosLE[Kind - FirstTargetFixupKind];
 }
 
 bool llvm::M86AsmBackend::fixupNeedsRelaxation(
@@ -42,11 +71,8 @@ bool llvm::M86AsmBackend::fixupNeedsRelaxation(
     const llvm::MCRelaxableFragment *DF,
     const llvm::MCAsmLayout &Layout) const {
   M86_START_FUNCTION();
-
   llvm_unreachable("fixupNeedsRelaxation() unimplemented");
-
   M86_END_FUNCTION();
-
   return false;
 }
 
@@ -54,17 +80,8 @@ bool llvm::M86AsmBackend::writeNopData(llvm::raw_ostream &OS,
                                        std::uint64_t Count,
                                        const llvm::MCSubtargetInfo *STI) const {
   M86_START_FUNCTION();
-
-  // Cannot emit NOP with size not multiple of 32 bits.
-  if (Count % 4 != 0)
-    return false;
-
-  uint64_t NumNops = Count / 4;
-  for (uint64_t i = 0; i != NumNops; ++i)
-    llvm::support::endian::write<std::uint32_t>(OS, 0x01000000, Endian);
-
+  OS.write_zeros(Count);
   M86_END_FUNCTION();
-
   return true;
 }
 

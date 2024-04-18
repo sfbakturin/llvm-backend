@@ -26,7 +26,10 @@ llvm::M86Subtarget::M86Subtarget(const llvm::Triple &TT, const std::string &CPU,
   M86_END_FUNCTION();
 }
 
-void llvm::M86Subtarget::anchor() { M86_START_FUNCTION(); }
+void llvm::M86Subtarget::anchor() {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
+}
 
 const llvm::M86InstrInfo *llvm::M86Subtarget::getInstrInfo() const {
   M86_START_FUNCTION();

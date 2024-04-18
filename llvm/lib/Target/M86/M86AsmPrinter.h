@@ -26,6 +26,7 @@ public:
                                    const MachineInstr *MI);
 
   void emitInstruction(const MachineInstr *MI) override;
+  bool runOnMachineFunction(MachineFunction &MF) override;
 
   // Used in pseudo lowerings
   bool lowerOperand(const MachineOperand &MO, MCOperand &MCOp) const;

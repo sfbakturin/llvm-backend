@@ -45,6 +45,7 @@ add_llvm_target(M86CodeGen
   M86PassConfig.h
 
   LINK_COMPONENTS
+  Analysis
   AsmPrinter
   CodeGen
   Core
@@ -54,6 +55,7 @@ add_llvm_target(M86CodeGen
   Support
   Target
   M86Info
+  GlobalISel
 
   ADD_TO_COMPONENT
   M86

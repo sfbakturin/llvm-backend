@@ -40,11 +40,115 @@ llvm::M86FrameLowering::M86FrameLowering(const llvm::M86Subtarget &STI)
 void llvm::M86FrameLowering::emitPrologue(llvm::MachineFunction &MF,
                                           llvm::MachineBasicBlock &MBB) const {
   M86_START_FUNCTION();
+  llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
+  auto *FI = MF.getInfo<llvm::M86MachineFunctionInfo>();
+  assert(FI && "FI is null!");
+  const llvm::M86RegisterInfo *RI = STI.getRegisterInfo();
+  llvm::MachineBasicBlock::iterator MBBI = MBB.begin();
+
+  llvm::Register FPReg = llvm::M86::RF;
+  llvm::Register SPReg = llvm::M86::RS;
+
+  // Debug location must be unknown since the first debug location is used
+  // to determine the end of the prologue.
+  llvm::DebugLoc DL;
+
+  std::uint64_t StackSize = alignTo(MFI.getStackSize(), getStackAlign());
+  MFI.setStackSize(StackSize);
+
+  if (!isInt<16>(StackSize)) {
+    M86_END_FUNCTION();
+    llvm_unreachable("Stack offs won't fit in M86::LDi");
+  }
+
+  // Early exit if there is no need to allocate on the stack
+  if (StackSize == 0 && !MFI.adjustsStack()) {
+    M86_END_FUNCTION();
+    llvm::errs() << "123123123 and " << FI->getVarArgsSaveSize() << "\n";
+    return;
+  }
+
+  // Allocate space on the stack if necessary.
+  adjustReg(MBB, MBBI, DL, SPReg, SPReg, -StackSize, MachineInstr::FrameSetup);
+
+  const auto &CSI = MFI.getCalleeSavedInfo();
+
+  // The frame pointer is callee-saved, and code has been generated for us to
+  // save it to the stack. We need to skip over the storing of callee-saved
+  // registers as the frame pointer must be modified after it has been saved
+  // to the stack, not before.
+  std::advance(MBBI, CSI.size());
+
+  if (!hasFP(MF)) {
+    M86_END_FUNCTION();
+    return;
+  }
+
+  // Generate new FP.
+  adjustReg(MBB, MBBI, DL, FPReg, SPReg, StackSize - FI->getVarArgsSaveSize(),
+            llvm::MachineInstr::FrameSetup);
+
+  if (RI->hasStackRealignment(MF)) {
+    M86_END_FUNCTION();
+    llvm_unreachable(""); // TODO: realigned stack
+  }
   M86_END_FUNCTION();
 }
 void llvm::M86FrameLowering::emitEpilogue(llvm::MachineFunction &MF,
                                           llvm::MachineBasicBlock &MBB) const {
   M86_START_FUNCTION();
+  const llvm::M86RegisterInfo *RI = STI.getRegisterInfo();
+  llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
+  auto *UFI = MF.getInfo<llvm::M86MachineFunctionInfo>();
+  llvm::Register FPReg = llvm::M86::RF;
+  llvm::Register SPReg = llvm::M86::RS;
+
+  // Get the insert location for the epilogue. If there were no terminators in
+  // the block, get the last instruction.
+  llvm::MachineBasicBlock::iterator MBBI = MBB.end();
+  llvm::DebugLoc DL;
+  if (!MBB.empty()) {
+    MBBI = MBB.getFirstTerminator();
+    if (MBBI == MBB.end())
+      MBBI = MBB.getLastNonDebugInstr();
+    DL = MBBI->getDebugLoc();
+
+    // If this is not a terminator, the actual insert location should be after
+    // the last instruction.
+    if (!MBBI->isTerminator())
+      MBBI = std::next(MBBI);
+
+    // TODO: is it necessary?
+    while (MBBI != MBB.begin() &&
+           std::prev(MBBI)->getFlag(llvm::MachineInstr::FrameDestroy))
+      --MBBI;
+  }
+
+  const auto &CSI = MFI.getCalleeSavedInfo();
+
+  // Skip to before the restores of callee-saved registers
+  // FIXME: assumes exactly one instruction is used to restore each
+  // callee-saved register.
+  auto LastFrameDestroy = MBBI;
+  if (!CSI.empty())
+    LastFrameDestroy = std::prev(MBBI, CSI.size());
+
+  std::uint64_t StackSize = MFI.getStackSize();
+  std::uint64_t FPOffset = StackSize - UFI->getVarArgsSaveSize();
+
+  // Restore the stack pointer using the value of the frame pointer. Only
+  // necessary if the stack pointer was modified, meaning the stack size is
+  // unknown.
+  if (RI->hasStackRealignment(MF) || MFI.hasVarSizedObjects()) {
+    llvm_unreachable("");
+    assert(hasFP(MF) && "frame pointer should not have been eliminated");
+    adjustReg(MBB, LastFrameDestroy, DL, SPReg, FPReg, -FPOffset,
+              llvm::MachineInstr::FrameDestroy);
+  }
+
+  // Deallocate stack
+  adjustReg(MBB, MBBI, DL, SPReg, SPReg, StackSize,
+            llvm::MachineInstr::FrameDestroy);
   M86_END_FUNCTION();
 }
 
@@ -54,12 +158,16 @@ void llvm::M86FrameLowering::determineCalleeSaves(
   M86_START_FUNCTION();
 
   llvm::TargetFrameLowering::determineCalleeSaves(MF, SavedRegs, RS);
+
   // Unconditionally spill RA and FP only if the function uses a frame
   // pointer.
   if (hasFP(MF)) {
-    SavedRegs.set(llvm::M86::R0);
-    SavedRegs.set(llvm::M86::R2);
+    SavedRegs.set(llvm::M86::RA);
+    SavedRegs.set(llvm::M86::RF);
   }
+  // Mark BP as used if function has dedicated base pointer.
+  if (hasBP(MF))
+    SavedRegs.set(llvm::M86::RB);
 
   M86_END_FUNCTION();
 }
@@ -83,7 +191,7 @@ bool llvm::M86FrameLowering::spillCalleeSavedRegisters(
     llvm::Register Reg = CS.getReg();
     const llvm::TargetRegisterClass *RC = TRI->getMinimalPhysRegClass(Reg);
     TII.storeRegToStackSlot(MBB, MI, Reg, !MBB.isLiveIn(Reg), CS.getFrameIdx(),
-                            RC, TRI, 0);
+                            RC, TRI, llvm::Register());
   }
 
   M86_END_FUNCTION();
@@ -107,16 +215,45 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
 
   // Insert in reverse order.
   // loadRegFromStackSlot can insert multiple instructions.
-  for (auto &CS : llvm::reverse(CSI)) {
+  for (auto &CS : reverse(CSI)) {
     llvm::Register Reg = CS.getReg();
     const llvm::TargetRegisterClass *RC = TRI->getMinimalPhysRegClass(Reg);
-    TII.loadRegFromStackSlot(MBB, MI, Reg, CS.getFrameIdx(), RC, TRI, 0);
+    TII.loadRegFromStackSlot(MBB, MI, Reg, CS.getFrameIdx(), RC, TRI,
+                             llvm::Register());
     assert(MI != MBB.begin() && "loadRegFromStackSlot didn't insert any code!");
   }
 
   M86_END_FUNCTION();
 
   return true;
+}
+
+void llvm::M86FrameLowering::processFunctionBeforeFrameFinalized(
+    llvm::MachineFunction &MF, llvm::RegScavenger *RS) const {
+  M86_START_FUNCTION();
+  llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
+  auto *UFI = MF.getInfo<llvm::M86MachineFunctionInfo>();
+  assert(UFI && "UFI is NULL!");
+  M86_END_FUNCTION();
+  return;
+
+  if (MFI.getCalleeSavedInfo().empty()) {
+    UFI->setCalleeSavedStackSize(0);
+    M86_END_FUNCTION();
+    return;
+  }
+
+  unsigned Size = 0;
+  for (const auto &Info : MFI.getCalleeSavedInfo()) {
+    int FrameIdx = Info.getFrameIdx();
+    if (MFI.getStackID(FrameIdx) != llvm::TargetStackID::Default)
+      continue;
+
+    Size += MFI.getObjectSize(FrameIdx);
+  }
+
+  UFI->setCalleeSavedStackSize(Size);
+  M86_END_FUNCTION();
 }
 
 bool llvm::M86FrameLowering::hasFP(const llvm::MachineFunction &MF) const {
@@ -132,6 +269,45 @@ bool llvm::M86FrameLowering::hasFP(const llvm::MachineFunction &MF) const {
              MF) || // -fomit-frame-pointer
          RegInfo->hasStackRealignment(MF) ||
          MFI.hasVarSizedObjects() || MFI.isFrameAddressTaken();
+}
+
+bool llvm::M86FrameLowering::hasBP(const llvm::MachineFunction &MF) const {
+  M86_START_FUNCTION();
+  const llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
+  const llvm::TargetRegisterInfo *TRI = STI.getRegisterInfo();
+  M86_END_FUNCTION();
+  return MFI.hasVarSizedObjects() && TRI->hasStackRealignment(MF);
+}
+
+// Eliminate ADJCALLSTACKDOWN, ADJCALLSTACKUP pseudo instructions.
+llvm::MachineBasicBlock::iterator
+llvm::M86FrameLowering::eliminateCallFramePseudoInstr(
+    llvm::MachineFunction &MF, llvm::MachineBasicBlock &MBB,
+    llvm::MachineBasicBlock::iterator MI) const {
+  M86_START_FUNCTION();
+  llvm::Register SPReg = llvm::M86::RS;
+  llvm::DebugLoc DL = MI->getDebugLoc();
+
+  if (!hasReservedCallFrame(MF)) {
+    // If space has not been reserved for a call frame, ADJCALLSTACKDOWN and
+    // ADJCALLSTACKUP must be converted to instructions manipulating the stack
+    // pointer. This is necessary when there is a variable length stack
+    // allocation (e.g. alloca), which means it's not possible to allocate
+    // space for outgoing arguments from within the function prologue.
+    std::int64_t Amount = MI->getOperand(0).getImm();
+
+    if (Amount != 0) {
+      // Ensure the stack remains aligned after adjustment.
+      Amount = alignSPAdjust(Amount);
+
+      if (MI->getOpcode() == llvm::M86::ADJCALLSTACKDOWN)
+        Amount = -Amount;
+
+      adjustReg(MBB, MI, DL, SPReg, SPReg, Amount, llvm::MachineInstr::NoFlags);
+    }
+  }
+  M86_END_FUNCTION();
+  return MBB.erase(MI);
 }
 
 llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
@@ -178,9 +354,9 @@ llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
 }
 
 // Not preserve stack space within prologue for outgoing variables when the
-// function contains variable size objects or there are vector objects accessed
-// by the frame pointer.
-// Let eliminateCallFramePseudoInstr preserve stack space for it.
+// function contains variable size objects or there are vector objects
+// accessed / by the frame pointer. / Let eliminateCallFramePseudoInstr
+// preserve stack space for it.
 bool llvm::M86FrameLowering::hasReservedCallFrame(
     const llvm::MachineFunction &MF) const {
   M86_START_FUNCTION();
@@ -194,4 +370,31 @@ void llvm::M86FrameLowering::adjustStackToMatchRecords(
   M86_START_FUNCTION();
   M86_END_FUNCTION();
   llvm_unreachable("");
+}
+
+void llvm::M86FrameLowering::adjustReg(llvm::MachineBasicBlock &MBB,
+                                       llvm::MachineBasicBlock::iterator MBBI,
+                                       const llvm::DebugLoc &DL,
+                                       llvm::Register DestReg,
+                                       llvm::Register SrcReg, std::int64_t Val,
+                                       llvm::MachineInstr::MIFlag Flag) const {
+  M86_START_FUNCTION();
+  const llvm::M86InstrInfo *TII = STI.getInstrInfo();
+
+  if (DestReg == SrcReg && Val == 0) {
+    M86_END_FUNCTION();
+    return;
+  }
+
+  if (isInt<16>(Val)) {
+    BuildMI(MBB, MBBI, DL, TII->get(llvm::M86::ADDI), DestReg)
+        .addReg(SrcReg)
+        .addImm(Val)
+        .setMIFlag(Flag);
+  } else {
+    // alloc vreg, load imm, add
+    llvm_unreachable("");
+  }
+
+  M86_END_FUNCTION();
 }

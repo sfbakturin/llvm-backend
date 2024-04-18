@@ -4,8 +4,11 @@
 #include <TargetInfo/M86TargetInfo.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/CodeGen/AsmPrinter.h>
+#include <llvm/CodeGen/MachineFunction.h>
 #include <llvm/CodeGen/MachineInstr.h>
 #include <llvm/CodeGen/MachineOperand.h>
+#include <llvm/CodeGen/TargetSubtargetInfo.h>
+#include <llvm/MC/MCContext.h>
 #include <llvm/MC/MCInst.h>
 #include <llvm/MC/MCStreamer.h>
 #include <llvm/MC/TargetRegistry.h>
@@ -54,6 +57,21 @@ void llvm::M86AsmPrinter::emitInstruction(const llvm::MachineInstr *MI) {
     EmitToStreamer(*OutStreamer, TmpInst);
 
   M86_END_FUNCTION();
+}
+
+bool llvm::M86AsmPrinter::runOnMachineFunction(llvm::MachineFunction &MF) {
+  // Set the current MCSubtargetInfo to a copy which has the correct
+  // feature bits for the current MachineFunction
+  M86_START_FUNCTION();
+  llvm::MCSubtargetInfo &NewSTI =
+      OutStreamer->getContext().getSubtargetCopy(*TM.getMCSubtargetInfo());
+  NewSTI.setFeatureBits(MF.getSubtarget().getFeatureBits());
+  STI = &NewSTI;
+
+  SetupMachineFunction(MF);
+  emitFunctionBody();
+  M86_END_FUNCTION();
+  return false;
 }
 
 // Force static initialization.

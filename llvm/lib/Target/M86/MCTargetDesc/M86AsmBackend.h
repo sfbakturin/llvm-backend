@@ -35,6 +35,8 @@ public:
 
   unsigned getNumFixupKinds() const override;
 
+  const MCFixupKindInfo &getFixupKindInfo(MCFixupKind Kind) const override;
+
   /// fixupNeedsRelaxation - Target specific predicate for whether a given
   /// fixup requires the associated instruction to be relaxed.
   bool fixupNeedsRelaxation(const MCFixup &Fixup, uint64_t Value,

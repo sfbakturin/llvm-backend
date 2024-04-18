@@ -56,25 +56,15 @@ void llvm::M86MachineFunctionInfo::setCalleeSavedStackSize(unsigned Size) {
 
 void llvm::M86MachineFunctionInfo::setReturnStackOffset(unsigned Off) {
   M86_START_FUNCTION();
-
   assert(!ReturnStackOffsetSet && "Return stack offset set twice");
   ReturnStackOffset = Off;
   ReturnStackOffsetSet = true;
-
   M86_END_FUNCTION();
 }
 
 unsigned llvm::M86MachineFunctionInfo::getReturnStackOffset() const {
   M86_START_FUNCTION();
-
   assert(ReturnStackOffsetSet && "Return stack offset not set");
-
   M86_END_FUNCTION();
-
   return ReturnStackOffset;
-}
-
-void llvm::M86MachineFunctionInfo::anchor() {
-  M86_START_FUNCTION();
-  M86_END_FUNCTION();
 }

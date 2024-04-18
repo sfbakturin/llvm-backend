@@ -26,17 +26,15 @@ class M86Instruction<bits<8> op, dag outs, dag ins, string asmstr, list<dag> pat
 
 	field bits<32> Inst;
 
-	bits<8> Opcode = op;
-	bits<4> RegDst;
-	bits<4> RegSrc;
-	bits<4> RegAcc;
-	bits<24> Imm;
+	bits<8>  Opcode = op;
+	bits<4>  Dst;
+	bits<4>  Src;
+	bits<16> Acc;
 
 	let Inst{31-24} = Opcode;
-	let Inst{23-20} = RegDst;
-	let Inst{19-16} = RegSrc;
-	let Inst{15-12} = RegAcc;
-	let Inst{23-0}  = Imm;
+	let Inst{23-20} = Dst;
+	let Inst{19-16} = Src;
+	let Inst{15-0}  = Acc;
 
 	let OutOperandList = outs;
 	let InOperandList  = ins;

@@ -35,7 +35,6 @@ bool llvm::LowerM86MachineOperandToMCOperand(const llvm::MachineOperand &MO,
                                              llvm::MCOperand &MCOp,
                                              const llvm::AsmPrinter &AP) {
   M86_START_FUNCTION();
-
   switch (MO.getType()) {
   default:
     llvm::report_fatal_error(
@@ -85,9 +84,7 @@ bool llvm::LowerM86MachineOperandToMCOperand(const llvm::MachineOperand &MO,
     break;
   }
   }
-
   M86_END_FUNCTION();
-
   return true;
 }
 
@@ -95,16 +92,12 @@ bool llvm::lowerM86MachineInstrToMCInst(const llvm::MachineInstr *MI,
                                         llvm::MCInst &OutMI,
                                         llvm::AsmPrinter &AP) {
   M86_START_FUNCTION();
-
   OutMI.setOpcode(MI->getOpcode());
-
   for (const llvm::MachineOperand &MO : MI->operands()) {
     llvm::MCOperand MCOp;
     if (llvm::LowerM86MachineOperandToMCOperand(MO, MCOp, AP))
       OutMI.addOperand(MCOp);
   }
-
   M86_END_FUNCTION();
-
   return false;
 }

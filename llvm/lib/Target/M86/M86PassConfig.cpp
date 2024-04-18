@@ -22,11 +22,8 @@ llvm::M86TargetMachine &llvm::M86PassConfig::getM86TargetMachine() const {
 
 bool llvm::M86PassConfig::addInstSelector() {
   M86_START_FUNCTION();
-
   addPass(llvm::createM86ISelDag(getM86TargetMachine()));
-
   M86_END_FUNCTION();
-
   return false;
 }
 

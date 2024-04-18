@@ -27,7 +27,7 @@ enum NodeType : unsigned {
   FIRST_NUMBER = ISD::BUILTIN_OP_END,
   RET,
   CALL,
-  BR_CC,
+  JCC,
 };
 
 } // namespace M86ISD
@@ -35,6 +35,9 @@ enum NodeType : unsigned {
 class M86TargetLowering : public TargetLowering {
 public:
   explicit M86TargetLowering(const TargetMachine &TM, const M86Subtarget &STI);
+
+  /// Provide custom lowering hooks for some operations.
+  SDValue LowerOperation(SDValue Op, SelectionDAG &DAG) const override;
 
   /// This method returns the name of a target specific DAG node.
   const char *getTargetNodeName(unsigned Opcode) const override;
@@ -73,6 +76,11 @@ private:
                       bool IsVarArg,
                       const SmallVectorImpl<ISD::OutputArg> &ArgsFlags,
                       LLVMContext &Context) const override;
+
+  bool mayBeEmittedAsTailCall(const CallInst *CI) const override;
+
+  SDValue lowerJCC(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerFIAddress(SDValue Op, SelectionDAG &DAG) const;
 };
 
 } // end namespace llvm

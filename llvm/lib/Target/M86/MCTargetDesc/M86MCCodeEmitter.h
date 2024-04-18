@@ -49,9 +49,16 @@ public:
   unsigned getMachineOpValue(const MCInst &MI, const MCOperand &MO,
                              SmallVectorImpl<MCFixup> &Fixups,
                              const MCSubtargetInfo &STI) const;
-  unsigned getM86ImmOpValue(const MCInst &MI, unsigned OpNo,
-                            SmallVectorImpl<MCFixup> &Fixups,
-                            const MCSubtargetInfo &STI) const;
+  unsigned getImmOpValue(const MCInst &MI, unsigned OpNo,
+                         SmallVectorImpl<MCFixup> &Fixups,
+                         const MCSubtargetInfo &STI) const;
+
+  /// getBranchTargetImmOpValue - Return binary encoding of the branch
+  /// target operand. If the machine operand requires relocation,
+  /// record the relocation and return zero.
+  unsigned getBranchTargetOpValue(const MCInst &MI, unsigned OpNo,
+                                  SmallVectorImpl<MCFixup> &Fixups,
+                                  const MCSubtargetInfo &STI) const;
 
 private:
   MCContext &Ctx;

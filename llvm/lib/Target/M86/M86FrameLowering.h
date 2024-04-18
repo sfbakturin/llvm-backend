@@ -38,10 +38,18 @@ public:
                               MutableArrayRef<CalleeSavedInfo> CSI,
                               const TargetRegisterInfo *TRI) const override;
 
+  void processFunctionBeforeFrameFinalized(MachineFunction &MF,
+                                           RegScavenger *RS) const override;
+
   /// hasFP - Return true if the specified function should have a dedicated
   /// frame pointer register. For most targets this is true only if the function
   /// has variable sized allocas or if frame pointer elimination is disabled.
   bool hasFP(const MachineFunction &MF) const override;
+  bool hasBP(const MachineFunction &MF) const;
+
+  MachineBasicBlock::iterator
+  eliminateCallFramePseudoInstr(MachineFunction &MF, MachineBasicBlock &MBB,
+                                MachineBasicBlock::iterator I) const override;
 
   StackOffset getFrameIndexReference(const MachineFunction &MF, int FI,
                                      Register &FrameReg) const override;
@@ -52,6 +60,10 @@ private:
   void adjustStackToMatchRecords(MachineBasicBlock &MBB,
                                  MachineBasicBlock::iterator MI,
                                  bool Allocate) const;
+
+  void adjustReg(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                 const DebugLoc &DL, Register DestReg, Register SrcReg,
+                 std::int64_t Val, MachineInstr::MIFlag Flag) const;
 
   const M86Subtarget &STI;
 };

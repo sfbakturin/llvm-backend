@@ -13,6 +13,7 @@ add_llvm_component_library(LLVMM86Desc
   M86AsmBackend.h
   M86ELFObjectWriter.h
   M86ELFAsmBackend.h
+  M86FixupKinds.h
 
   LINK_COMPONENTS
   MC

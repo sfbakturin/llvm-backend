@@ -22,6 +22,8 @@ public:
   bool runOnMachineFunction(MachineFunction &MF) override;
 
   void Select(SDNode *N) override;
+  bool SelectFIAddress(SDValue Addr, SDValue &Base);
+  bool SelectBaseAddress(SDValue Addr, SDValue &Base);
 
   StringRef getPassName() const override;
 

@@ -35,7 +35,7 @@ using namespace llvm;
 #include <llvm/Support/MathExtras.h>
 
 llvm::M86RegisterInfo::M86RegisterInfo()
-    : llvm::M86GenRegisterInfo(llvm::M86::R0) {
+    : llvm::M86GenRegisterInfo(llvm::M86::RA) {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
 }
@@ -54,10 +54,15 @@ llvm::M86RegisterInfo::getReservedRegs(const llvm::MachineFunction &MF) const {
   const llvm::M86FrameLowering *TFI = getFrameLowering(MF);
 
   BitVector Reserved(getNumRegs());
-  Reserved.set(llvm::M86::R1);
+  Reserved.set(llvm::M86::RG);
+  Reserved.set(llvm::M86::RS);
 
   if (TFI->hasFP(MF)) {
-    Reserved.set(llvm::M86::R2);
+    Reserved.set(llvm::M86::RF);
+  }
+
+  if (TFI->hasBP(MF)) {
+    Reserved.set(llvm::M86::RB);
   }
 
   M86_END_FUNCTION();
@@ -105,12 +110,9 @@ bool llvm::M86RegisterInfo::eliminateFrameIndex(
 llvm::Register
 llvm::M86RegisterInfo::getFrameRegister(const llvm::MachineFunction &MF) const {
   M86_START_FUNCTION();
-
   const llvm::TargetFrameLowering *TFI = getFrameLowering(MF);
-
   M86_END_FUNCTION();
-
-  return TFI->hasFP(MF) ? llvm::M86::R2 : llvm::M86::R1;
+  return TFI->hasFP(MF) ? llvm::M86::RF : llvm::M86::RS;
 }
 
 const std::uint32_t *

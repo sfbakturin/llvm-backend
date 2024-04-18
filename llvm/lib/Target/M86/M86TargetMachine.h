@@ -29,6 +29,7 @@ public:
 
   TargetPassConfig *createPassConfig(PassManagerBase &PM) override;
   TargetLoweringObjectFile *getObjFileLowering() const override;
+  const M86Subtarget *getSubtargetImpl() const { return &Subtarget; }
   const M86Subtarget *getSubtargetImpl(const Function &) const override;
 
 private:

@@ -1,4 +1,5 @@
 ﻿#include <M86.h>
+#include <MCTargetDesc/M86FixupKinds.h>
 #include <MCTargetDesc/M86MCCodeEmitter.h>
 #include <MCTargetDesc/M86MCTargetDesc.h>
 #include <cassert>
@@ -80,7 +81,7 @@ unsigned llvm::M86MCCodeEmitter::getMachineOpValue(
   return 0;
 }
 
-unsigned llvm::M86MCCodeEmitter::getM86ImmOpValue(
+unsigned llvm::M86MCCodeEmitter::getImmOpValue(
     const llvm::MCInst &MI, unsigned OpNo,
     llvm::SmallVectorImpl<llvm::MCFixup> &Fixups,
     const llvm::MCSubtargetInfo &STI) const {
@@ -108,10 +109,29 @@ unsigned llvm::M86MCCodeEmitter::getM86ImmOpValue(
   return 0;
 }
 
+unsigned llvm::M86MCCodeEmitter::getBranchTargetOpValue(
+    const MCInst &MI, unsigned OpNo, SmallVectorImpl<MCFixup> &Fixups,
+    const MCSubtargetInfo &STI) const {
+  M86_START_FUNCTION();
+
+  const llvm::MCOperand &MO = MI.getOperand(OpNo);
+
+  // If the destination is an immediate, divide by 4.
+  if (MO.isImm())
+    return MO.getImm() / 4;
+
+  assert(MO.isExpr() &&
+         "getBranchTargetImmOpValue expects only expressions or immediates");
+
+  Fixups.push_back(
+      MCFixup::create(0, MO.getExpr(), MCFixupKind(llvm::M86::FIXUP_M86_PC16)));
+  return 0;
+}
+
 #include <M86GenMCCodeEmitter.inc>
 
-MCCodeEmitter *llvm::createM86MCCodeEmitter(const llvm::MCInstrInfo &MCII,
-                                            llvm::MCContext &Ctx) {
+llvm::MCCodeEmitter *llvm::createM86MCCodeEmitter(const llvm::MCInstrInfo &MCII,
+                                                  llvm::MCContext &Ctx) {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
   return new llvm::M86MCCodeEmitter(MCII, Ctx);
