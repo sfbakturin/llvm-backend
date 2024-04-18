@@ -36,21 +36,25 @@ const llvm::M86InstrInfo *llvm::M86Subtarget::getInstrInfo() const {
   M86_END_FUNCTION();
   return &InstrInfo;
 }
+
 const llvm::M86FrameLowering *llvm::M86Subtarget::getFrameLowering() const {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
   return &FrameLowering;
 }
+
 const llvm::M86TargetLowering *llvm::M86Subtarget::getTargetLowering() const {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
   return &TLInfo;
 }
+
 const llvm::M86RegisterInfo *llvm::M86Subtarget::getRegisterInfo() const {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
   return &RegInfo;
 }
+
 const llvm::SelectionDAGTargetInfo *
 llvm::M86Subtarget::getSelectionDAGInfo() const {
   M86_START_FUNCTION();

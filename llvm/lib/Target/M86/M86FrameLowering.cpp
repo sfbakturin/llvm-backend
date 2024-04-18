@@ -42,7 +42,6 @@ void llvm::M86FrameLowering::emitPrologue(llvm::MachineFunction &MF,
   M86_START_FUNCTION();
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *FI = MF.getInfo<llvm::M86MachineFunctionInfo>();
-  assert(FI && "FI is null!");
   const llvm::M86RegisterInfo *RI = STI.getRegisterInfo();
   llvm::MachineBasicBlock::iterator MBBI = MBB.begin();
 
@@ -90,7 +89,7 @@ void llvm::M86FrameLowering::emitPrologue(llvm::MachineFunction &MF,
 
   if (RI->hasStackRealignment(MF)) {
     M86_END_FUNCTION();
-    llvm_unreachable(""); // TODO: realigned stack
+    llvm_unreachable("");
   }
 
   M86_END_FUNCTION();
@@ -120,7 +119,6 @@ void llvm::M86FrameLowering::emitEpilogue(llvm::MachineFunction &MF,
     if (!MBBI->isTerminator())
       MBBI = std::next(MBBI);
 
-    // TODO: is it necessary?
     while (MBBI != MBB.begin() &&
            std::prev(MBBI)->getFlag(llvm::MachineInstr::FrameDestroy))
       --MBBI;
@@ -128,9 +126,7 @@ void llvm::M86FrameLowering::emitEpilogue(llvm::MachineFunction &MF,
 
   const auto &CSI = MFI.getCalleeSavedInfo();
 
-  // Skip to before the restores of callee-saved registers
-  // FIXME: assumes exactly one instruction is used to restore each
-  // callee-saved register.
+  // Skip to before the restores of callee-saved registers.
   auto LastFrameDestroy = MBBI;
   if (!CSI.empty())
     LastFrameDestroy = std::prev(MBBI, CSI.size());
@@ -234,30 +230,8 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
 void llvm::M86FrameLowering::processFunctionBeforeFrameFinalized(
     llvm::MachineFunction &MF, llvm::RegScavenger *RS) const {
   M86_START_FUNCTION();
-
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *UFI = MF.getInfo<llvm::M86MachineFunctionInfo>();
-  assert(UFI && "UFI is NULL!");
-
-  M86_END_FUNCTION();
-  return;
-
-  if (MFI.getCalleeSavedInfo().empty()) {
-    UFI->setCalleeSavedStackSize(0);
-    M86_END_FUNCTION();
-    return;
-  }
-
-  unsigned Size = 0;
-  for (const auto &Info : MFI.getCalleeSavedInfo()) {
-    int FrameIdx = Info.getFrameIdx();
-    if (MFI.getStackID(FrameIdx) != llvm::TargetStackID::Default)
-      continue;
-
-    Size += MFI.getObjectSize(FrameIdx);
-  }
-
-  UFI->setCalleeSavedStackSize(Size);
   M86_END_FUNCTION();
 }
 
@@ -269,10 +243,9 @@ bool llvm::M86FrameLowering::hasFP(const llvm::MachineFunction &MF) const {
 
   M86_END_FUNCTION();
 
-  return MF.getTarget().Options.DisableFramePointerElim(
-             MF) || // -fomit-frame-pointer
-         RegInfo->hasStackRealignment(MF) ||
-         MFI.hasVarSizedObjects() || MFI.isFrameAddressTaken();
+  return MF.getTarget().Options.DisableFramePointerElim(MF) ||
+         RegInfo->hasStackRealignment(MF) || MFI.hasVarSizedObjects() ||
+         MFI.isFrameAddressTaken();
 }
 
 bool llvm::M86FrameLowering::hasBP(const llvm::MachineFunction &MF) const {
@@ -362,7 +335,7 @@ llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
 
 // Not preserve stack space within prologue for outgoing variables when the
 // function contains variable size objects or there are vector objects
-// accessed / by the frame pointer. / Let eliminateCallFramePseudoInstr
+// accessed by the frame pointer. Let eliminateCallFramePseudoInstr
 // preserve stack space for it.
 bool llvm::M86FrameLowering::hasReservedCallFrame(
     const llvm::MachineFunction &MF) const {

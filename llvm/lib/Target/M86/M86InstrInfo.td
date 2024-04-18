@@ -180,14 +180,38 @@ def JMPA : M86Instruction<
 	[(brind GPR:$Dst)]
 >;
 
+//// JMPI - JuMP to Indirect address, unconditional and inderect jump to address.
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Dst = 0 in
+def JMPI : M86Instruction<
+	0x00,
+	(outs GPR:$Src),
+	(ins m86_ctarget:$Acc),
+	"JMPI $Src $Acc",
+	[]
+>;
+
 //// RET - RETurn, unconditional jump to return address.
 let isBarrier = 1, isReturn = 1, isTerminator = 1 in
 def RET : M86Microcode<
 	(outs),
 	(ins),
-	"# PseudoRET",
+	"# RET",
 	[(m86_ret)]
 >, PseudoInstExpansion<(JMPA R1)>;
+
+//// CALL - CALL the function, unconditional jump to function address with saving arguments.
+let isCall = 1, Defs = [R0] in
+def CALL : M86Microcode<
+	(outs),
+	(ins m86_ctarget:$Acc),
+	"# CALL",
+	[(m86_call tglobaladdr:$Acc)]
+>, PseudoInstExpansion<(JMPI R0, m86_ctarget:$Acc)>;
+
+// let isCall = 1, Defs = [R0] in
+// def PseudoCALLInd : SimPseudoInst<(outs), (ins GPR:$r1), "# PseudoCALLInd",
+//                     [(sim_call GPR:$r1)]>,
+//                     PseudoInstExpansion<(BLR R0, GPR:$r1)>;
 
 //// JEQ - Jump if EQual, conditional jump if two operands equals.
 def JEQ  : M86TemplateJCC<0x00, "JEQ">;
@@ -219,14 +243,6 @@ def MOVTLI : M86Instruction<
 	[(set GPR:$Dst, m86_i32li16:$Acc)]
 >;
 
-//// MOVLI - MOVe Low 16 bits Immediate value to R2 register.
-//// def MOVLI : M86Microcode<
-//// 	(outs),
-//// 	(ins m86_i32li16:$Acc),
-//// 	"# Microcode MOVLI",
-//// 	[]
-//// >, PseudoInstExpansion<(MOVTLI R2, $Acc)>;
-
 //// MOVTHI - MOVe High 16 bits Immediate value To register.
 let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1, Src = 0  in
 def MOVTHI : M86Instruction<
@@ -236,14 +252,6 @@ def MOVTHI : M86Instruction<
 	"MOVTHI $Dst $Acc",
 	[(set GPR:$Dst, m86_i32hi16:$Acc)]
 >;
-
-//// MOVHI - MOVe High 16 bits Immediate value to R2 register.
-//// def MOVHI : M86Microcode<
-//// 	(outs),
-//// 	(ins m86_i32hi16:$Acc),
-//// 	"# Microcode MOVHI",
-//// 	[]
-//// >, PseudoInstExpansion<(MOVTHI R2, $Acc)>;
 
 //// MOVTF - MOVe value From register To register.
 let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1, Acc = 0 in
@@ -397,3 +405,18 @@ def EADDMUL : M86Instruction<
 	]
 >;
 
+//===----------------------------------------------------------------------===//
+// M86 Other patterns
+//===----------------------------------------------------------------------===//
+
+// i16 imm
+def : Pat<(i32 m86_i32li16:$Acc), (MOVTLI imm:$Acc)>;
+
+def : Pat<
+	(add (i32 m86_fiaddr:$Src), m86_simm:$Acc),
+	(ADDI (i32 m86_fiaddr:$Src), m86_simm:$Acc)
+>;
+def : Pat<
+	(IsOrAdd (i32 m86_fiaddr:$Src), m86_simm:$Acc),
+	(ADDI (i32 m86_fiaddr:$Src), m86_simm:$Acc)
+>;

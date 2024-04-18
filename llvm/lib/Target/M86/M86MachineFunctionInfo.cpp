@@ -26,6 +26,7 @@ void llvm::M86MachineFunctionInfo::setVarArgsFrameIndex(int Off) {
   VarArgsFrameIndex = Off;
   M86_END_FUNCTION();
 }
+
 int llvm::M86MachineFunctionInfo::getVarArgsFrameIndex() const {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
@@ -48,6 +49,7 @@ unsigned llvm::M86MachineFunctionInfo::getCalleeSavedStackSize() const {
   M86_END_FUNCTION();
   return CalleeSavedStackSize;
 }
+
 void llvm::M86MachineFunctionInfo::setCalleeSavedStackSize(unsigned Size) {
   M86_START_FUNCTION();
   CalleeSavedStackSize = Size;

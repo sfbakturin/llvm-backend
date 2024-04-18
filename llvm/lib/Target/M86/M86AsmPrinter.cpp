@@ -2,9 +2,8 @@
 #include <M86AsmPrinter.h>
 #include <M86InstrLowering.h>
 #include <M86Subtarget.h>
-#include <MCTargetDesc/M86InstPrinter.h>
-// don't remove this header
 #include <M86TargetMachine.h>
+#include <MCTargetDesc/M86InstPrinter.h>
 #include <TargetInfo/M86TargetInfo.h>
 #include <llvm/ADT/Statistic.h>
 #include <llvm/CodeGen/AsmPrinter.h>
