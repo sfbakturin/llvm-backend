@@ -158,6 +158,37 @@ class M86TemplateJCC<bits<8> op, string opcodestr> : M86Instruction<
 // M86 instructions.
 //===----------------------------------------------------------------------===//
 
+// Graphical.
+
+//// PP - Put Pixel.
+def PP : M86Instruction<
+	1,
+	(outs),
+	(ins GPR:$Dst, GPR:$Src, GPR:$Acc),
+	"PP $Dst $Src $Acc",
+	[(int_m86_putpixel GPR:$Dst, GPR:$Src, GPR:$Acc)]
+>;
+
+//// FLS - FLuSh to screen.
+let Dst = 0, Src = 0, Acc = 0 in
+def FLS : M86Instruction<
+	2,
+	(outs),
+	(ins),
+	"FLS",
+	[(int_m86_flush)]
+>;
+
+//// RND - RaNDom number.
+let Dst = 0, Src = 0, Acc = 0 in
+def RND : M86Instruction<
+	3,
+	(outs),
+	(ins),
+	"RND",
+	[(int_m86_simrand)]
+>;
+
 // Control flow.
 
 //// JMPL - JuMP to Label, unconditional jump by offset.
@@ -411,6 +442,9 @@ def EADDMUL : M86Instruction<
 
 // i16 imm
 def : Pat<(i32 m86_i32li16:$Acc), (MOVTLI imm:$Acc)>;
+
+// i32 imm
+def : Pat<(i32 imm:$Acc), (ADDI (MOVTHI (m86_immhi imm:$Acc)), (m86_immli imm:$Acc))>;
 
 def : Pat<
 	(add (i32 m86_fiaddr:$Src), m86_simm:$Acc),

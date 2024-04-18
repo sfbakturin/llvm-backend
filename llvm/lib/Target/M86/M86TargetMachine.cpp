@@ -3,6 +3,7 @@
 #include <optional>
 
 #include <M86.h>
+#include <M86MachineFunctionInfo.h>
 #include <M86Subtarget.h>
 #include <M86TargetMachine.h>
 #include <TargetInfo/M86TargetInfo.h>
@@ -74,4 +75,10 @@ llvm::M86TargetMachine::getSubtargetImpl(const llvm::Function &) const {
   M86_START_FUNCTION();
   M86_END_FUNCTION();
   return &Subtarget;
+}
+
+llvm::MachineFunctionInfo *llvm::M86TargetMachine::createMachineFunctionInfo(
+    llvm::BumpPtrAllocator &Allocator, const llvm::Function &F,
+    const llvm::TargetSubtargetInfo *STI) const {
+  return new llvm::M86MachineFunctionInfo();
 }

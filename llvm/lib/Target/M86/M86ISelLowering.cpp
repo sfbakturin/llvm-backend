@@ -83,6 +83,7 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
   setOperationAction(llvm::ISD::BR_CC, llvm::MVT::i32, Custom);
 
   setOperationAction(llvm::ISD::FRAMEADDR, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::INTRINSIC_VOID, llvm::MVT::i32, Custom);
 
   M86_END_FUNCTION();
 }
@@ -286,7 +287,6 @@ llvm::SDValue llvm::M86TargetLowering::LowerCall(
   // No external symbols support
   if (llvm::GlobalAddressSDNode *S =
           llvm::dyn_cast<llvm::GlobalAddressSDNode>(Callee)) {
-    // llvm_unreachable("How do i suppose to lower this?");
     const llvm::GlobalValue *GV = S->getGlobal();
     assert(getTargetMachine().shouldAssumeDSOLocal(*GV->getParent(), GV));
     Callee = DAG.getTargetGlobalAddress(GV, DL, PtrVT, 0, 0);

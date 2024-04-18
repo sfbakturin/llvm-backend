@@ -32,6 +32,9 @@ public:
   TargetLoweringObjectFile *getObjFileLowering() const override;
   const M86Subtarget *getSubtargetImpl() const { return &Subtarget; }
   const M86Subtarget *getSubtargetImpl(const Function &) const override;
+  MachineFunctionInfo *
+  createMachineFunctionInfo(BumpPtrAllocator &Allocator, const Function &F,
+                            const TargetSubtargetInfo *STI) const override;
 
 private:
   std::unique_ptr<TargetLoweringObjectFile> TLOF;
