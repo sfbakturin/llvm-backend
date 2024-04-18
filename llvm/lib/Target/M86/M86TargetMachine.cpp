@@ -60,6 +60,8 @@ llvm::M86TargetMachine::M86TargetMachine(
   M86_END_FUNCTION();
 }
 
+llvm::M86TargetMachine::~M86TargetMachine() = default;
+
 llvm::TargetLoweringObjectFile *
 llvm::M86TargetMachine::getObjFileLowering() const {
   M86_START_FUNCTION();

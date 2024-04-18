@@ -37,21 +37,18 @@ llvm::M86InstPrinter::M86InstPrinter(const llvm::MCAsmInfo &MAI,
 void llvm::M86InstPrinter::printRegName(llvm::raw_ostream &O,
                                         llvm::MCRegister Reg) const {
   M86_START_FUNCTION();
-
   O << getRegisterName(Reg);
-
   M86_END_FUNCTION();
 }
 
-void llvm::M86InstPrinter::printInst(const llvm::MCInst *MI, uint64_t Address,
+void llvm::M86InstPrinter::printInst(const llvm::MCInst *MI,
+                                     std::uint64_t Address,
                                      llvm::StringRef Annot,
                                      const llvm::MCSubtargetInfo &STI,
                                      llvm::raw_ostream &O) {
   M86_START_FUNCTION();
-
   printInstruction(MI, Address, O);
   printAnnotation(O, Annot);
-
   M86_END_FUNCTION();
 }
 
@@ -60,9 +57,13 @@ void llvm::M86InstPrinter::printBranchOperand(const llvm::MCInst *MI,
                                               unsigned OpNo,
                                               llvm::raw_ostream &O) {
   M86_START_FUNCTION();
+
   const llvm::MCOperand &MO = MI->getOperand(OpNo);
-  if (!MO.isImm())
+
+  if (!MO.isImm()) {
+    M86_END_FUNCTION();
     return printOperand(MI, OpNo, O);
+  }
 
   if (PrintBranchImmAsAddress) {
     std::uint32_t Target = Address + MO.getImm();
@@ -70,6 +71,7 @@ void llvm::M86InstPrinter::printBranchOperand(const llvm::MCInst *MI,
   } else {
     O << MO.getImm();
   }
+
   M86_END_FUNCTION();
 }
 

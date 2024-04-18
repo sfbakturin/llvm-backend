@@ -58,18 +58,18 @@ void llvm::M86FrameLowering::emitPrologue(llvm::MachineFunction &MF,
 
   if (!isInt<16>(StackSize)) {
     M86_END_FUNCTION();
-    llvm_unreachable("Stack offs won't fit in M86::LDi");
+    llvm_unreachable("Stack offs won't fit in llvm::M86::MEMLD");
   }
 
   // Early exit if there is no need to allocate on the stack
   if (StackSize == 0 && !MFI.adjustsStack()) {
     M86_END_FUNCTION();
-    llvm::errs() << "123123123 and " << FI->getVarArgsSaveSize() << "\n";
     return;
   }
 
   // Allocate space on the stack if necessary.
-  adjustReg(MBB, MBBI, DL, SPReg, SPReg, -StackSize, MachineInstr::FrameSetup);
+  adjustReg(MBB, MBBI, DL, SPReg, SPReg, -StackSize,
+            llvm::MachineInstr::FrameSetup);
 
   const auto &CSI = MFI.getCalleeSavedInfo();
 
@@ -92,11 +92,13 @@ void llvm::M86FrameLowering::emitPrologue(llvm::MachineFunction &MF,
     M86_END_FUNCTION();
     llvm_unreachable(""); // TODO: realigned stack
   }
+
   M86_END_FUNCTION();
 }
 void llvm::M86FrameLowering::emitEpilogue(llvm::MachineFunction &MF,
                                           llvm::MachineBasicBlock &MBB) const {
   M86_START_FUNCTION();
+
   const llvm::M86RegisterInfo *RI = STI.getRegisterInfo();
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *UFI = MF.getInfo<llvm::M86MachineFunctionInfo>();
@@ -149,6 +151,7 @@ void llvm::M86FrameLowering::emitEpilogue(llvm::MachineFunction &MF,
   // Deallocate stack
   adjustReg(MBB, MBBI, DL, SPReg, SPReg, StackSize,
             llvm::MachineInstr::FrameDestroy);
+
   M86_END_FUNCTION();
 }
 
@@ -215,7 +218,7 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
 
   // Insert in reverse order.
   // loadRegFromStackSlot can insert multiple instructions.
-  for (auto &CS : reverse(CSI)) {
+  for (auto &CS : llvm::reverse(CSI)) {
     llvm::Register Reg = CS.getReg();
     const llvm::TargetRegisterClass *RC = TRI->getMinimalPhysRegClass(Reg);
     TII.loadRegFromStackSlot(MBB, MI, Reg, CS.getFrameIdx(), RC, TRI,
@@ -231,9 +234,11 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
 void llvm::M86FrameLowering::processFunctionBeforeFrameFinalized(
     llvm::MachineFunction &MF, llvm::RegScavenger *RS) const {
   M86_START_FUNCTION();
+
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *UFI = MF.getInfo<llvm::M86MachineFunctionInfo>();
   assert(UFI && "UFI is NULL!");
+
   M86_END_FUNCTION();
   return;
 
@@ -260,7 +265,6 @@ bool llvm::M86FrameLowering::hasFP(const llvm::MachineFunction &MF) const {
   M86_START_FUNCTION();
 
   const llvm::TargetRegisterInfo *RegInfo = MF.getSubtarget().getRegisterInfo();
-
   const llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
 
   M86_END_FUNCTION();
@@ -285,6 +289,7 @@ llvm::M86FrameLowering::eliminateCallFramePseudoInstr(
     llvm::MachineFunction &MF, llvm::MachineBasicBlock &MBB,
     llvm::MachineBasicBlock::iterator MI) const {
   M86_START_FUNCTION();
+
   llvm::Register SPReg = llvm::M86::RS;
   llvm::DebugLoc DL = MI->getDebugLoc();
 
@@ -306,7 +311,9 @@ llvm::M86FrameLowering::eliminateCallFramePseudoInstr(
       adjustReg(MBB, MI, DL, SPReg, SPReg, Amount, llvm::MachineInstr::NoFlags);
     }
   }
+
   M86_END_FUNCTION();
+
   return MBB.erase(MI);
 }
 
@@ -335,7 +342,7 @@ llvm::StackOffset llvm::M86FrameLowering::getFrameIndexReference(
   }
 
   if (FI >= MinCSFI && FI <= MaxCSFI) {
-    FrameReg = llvm::M86::R1;
+    FrameReg = llvm::M86::RS;
     Offset += MFI.getStackSize();
   } else if (RI->hasStackRealignment(MF) && !MFI.isFixedObjectIndex(FI)) {
     llvm_unreachable("");

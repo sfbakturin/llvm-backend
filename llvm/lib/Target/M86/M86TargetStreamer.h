@@ -8,6 +8,7 @@ namespace llvm {
 class M86TargetStreamer : public MCTargetStreamer {
 public:
   M86TargetStreamer(MCStreamer &S);
+  ~M86TargetStreamer() override;
 };
 
 } // end namespace llvm

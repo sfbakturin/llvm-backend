@@ -94,12 +94,13 @@ unsigned llvm::M86MCCodeEmitter::getImmOpValue(
   }
 
   assert(MO.isExpr() &&
-         "getM86ImmOpValue expects only expressions or an immediate");
+         "getImmOpValue expects only expressions or an immediate");
 
   const llvm::MCExpr *Expr = MO.getExpr();
 
   // Constant value, no fixup is needed
-  if (const llvm::MCConstantExpr *CE = dyn_cast<MCConstantExpr>(Expr)) {
+  if (const llvm::MCConstantExpr *CE =
+          llvm::dyn_cast<llvm::MCConstantExpr>(Expr)) {
     M86_END_FUNCTION();
     return CE->getValue();
   }
@@ -117,14 +118,19 @@ unsigned llvm::M86MCCodeEmitter::getBranchTargetOpValue(
   const llvm::MCOperand &MO = MI.getOperand(OpNo);
 
   // If the destination is an immediate, divide by 4.
-  if (MO.isImm())
+  if (MO.isImm()) {
+    M86_END_FUNCTION();
     return MO.getImm() / 4;
+  }
 
   assert(MO.isExpr() &&
-         "getBranchTargetImmOpValue expects only expressions or immediates");
+         "getBranchTargetOpValue expects only expressions or immediates");
 
   Fixups.push_back(
       MCFixup::create(0, MO.getExpr(), MCFixupKind(llvm::M86::FIXUP_M86_PC16)));
+
+  M86_END_FUNCTION();
+
   return 0;
 }
 

@@ -1,19 +1,22 @@
 #include <M86.h>
 #include <M86AsmPrinter.h>
 #include <M86InstrLowering.h>
+#include <M86Subtarget.h>
+#include <MCTargetDesc/M86InstPrinter.h>
+// don't remove this header
+#include <M86TargetMachine.h>
 #include <TargetInfo/M86TargetInfo.h>
-#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Statistic.h>
 #include <llvm/CodeGen/AsmPrinter.h>
-#include <llvm/CodeGen/MachineFunction.h>
+#include <llvm/CodeGen/MachineConstantPool.h>
+#include <llvm/CodeGen/MachineFunctionPass.h>
 #include <llvm/CodeGen/MachineInstr.h>
-#include <llvm/CodeGen/MachineOperand.h>
-#include <llvm/CodeGen/TargetSubtargetInfo.h>
-#include <llvm/MC/MCContext.h>
+#include <llvm/CodeGen/MachineModuleInfo.h>
+#include <llvm/MC/MCAsmInfo.h>
 #include <llvm/MC/MCInst.h>
 #include <llvm/MC/MCStreamer.h>
 #include <llvm/MC/TargetRegistry.h>
-#include <llvm/Support/Compiler.h>
-#include <llvm/Target/TargetMachine.h>
+#include <llvm/Support/ErrorHandling.h>
 #include <memory>
 #include <type_traits>
 
@@ -52,7 +55,7 @@ void llvm::M86AsmPrinter::emitInstruction(const llvm::MachineInstr *MI) {
     return;
   }
 
-  MCInst TmpInst;
+  llvm::MCInst TmpInst;
   if (!llvm::lowerM86MachineInstrToMCInst(MI, TmpInst, *this))
     EmitToStreamer(*OutStreamer, TmpInst);
 
@@ -67,7 +70,6 @@ bool llvm::M86AsmPrinter::runOnMachineFunction(llvm::MachineFunction &MF) {
       OutStreamer->getContext().getSubtargetCopy(*TM.getMCSubtargetInfo());
   NewSTI.setFeatureBits(MF.getSubtarget().getFeatureBits());
   STI = &NewSTI;
-
   SetupMachineFunction(MF);
   emitFunctionBody();
   M86_END_FUNCTION();

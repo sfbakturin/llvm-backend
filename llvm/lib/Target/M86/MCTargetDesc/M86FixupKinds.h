@@ -10,7 +10,7 @@ namespace M86 {
 // to be uniquely named.
 //
 // This table *must* be in the same order of
-// MCFixupKindInfo Infos[m86::NumTargetFixupKinds]
+// MCFixupKindInfo Infos[M86::NumTargetFixupKinds]
 // in M86AsmBackend.cpp.
 //
 enum Fixups {

@@ -10,10 +10,10 @@ llvm::M86ELFMCAsmInfo::M86ELFMCAsmInfo(const llvm::Triple &TT) {
   M86_START_FUNCTION();
 
   SupportsDebugInformation = false;
-  Data16bitsDirective = "\t.word\t";
-  Data32bitsDirective = "\t.dword\t";
-  Data64bitsDirective = "\t.qword\t";
-  ZeroDirective = "\t.zero\t";
+  Data16bitsDirective = "\t.short\t";
+  Data32bitsDirective = "\t.word\t";
+  Data64bitsDirective = nullptr;
+  ZeroDirective = "\t.space\t";
   CommentString = ";";
 
   UsesELFSectionDirectiveForBSS = false;

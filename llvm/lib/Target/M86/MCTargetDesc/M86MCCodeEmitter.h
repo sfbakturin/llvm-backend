@@ -33,6 +33,7 @@ public:
   M86MCCodeEmitter(const MCInstrInfo &, MCContext &ctx);
   M86MCCodeEmitter(const M86MCCodeEmitter &) = delete;
   M86MCCodeEmitter &operator=(const M86MCCodeEmitter &) = delete;
+  ~M86MCCodeEmitter() override = default;
 
   void encodeInstruction(const MCInst &MI, SmallVectorImpl<char> &CB,
                          SmallVectorImpl<MCFixup> &Fixups,

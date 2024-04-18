@@ -35,7 +35,7 @@ llvm::StringRef llvm::M86DAGToDAGISel::getPassName() const {
   return "M86 DAG->DAG Pattern Instruction Selection";
 }
 
-/// This pass converts a legalized DAG into a Sim-specific DAG, ready for
+/// This pass converts a legalized DAG into a M86-specific DAG, ready for
 /// instruction scheduling.
 llvm::FunctionPass *llvm::createM86ISelDag(llvm::M86TargetMachine &TM) {
   M86_START_FUNCTION();
@@ -45,12 +45,14 @@ llvm::FunctionPass *llvm::createM86ISelDag(llvm::M86TargetMachine &TM) {
 
 void llvm::M86DAGToDAGISel::Select(llvm::SDNode *Node) {
   M86_START_FUNCTION();
+
   if (Node->isMachineOpcode()) {
     LLVM_DEBUG(llvm::dbgs() << "== "; Node->dump(CurDAG); llvm::dbgs() << "\n");
     Node->setNodeId(-1);
     M86_END_FUNCTION();
     return;
   }
+
   unsigned Opcode = Node->getOpcode();
   llvm::SDLoc DL(Node);
   llvm::MVT VT = Node->getSimpleValueType(0);
@@ -66,6 +68,7 @@ void llvm::M86DAGToDAGISel::Select(llvm::SDNode *Node) {
     return;
   }
   }
+
   SelectCode(Node);
   M86_END_FUNCTION();
 }

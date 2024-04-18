@@ -1,6 +1,7 @@
 #include <M86.h>
 #include <MCTargetDesc/M86AsmBackend.h>
 #include <MCTargetDesc/M86ELFAsmBackend.h>
+#include <MCTargetDesc/M86FixupKinds.h>
 #include <MCTargetDesc/M86MCTargetDesc.h>
 #include <cstdint>
 #include <llvm/ADT/ArrayRef.h>
@@ -38,14 +39,35 @@ void llvm::M86ELFAsmBackend::applyFixup(
     std::uint64_t Value, bool IsResolved,
     const llvm::MCSubtargetInfo *STI) const {
   M86_START_FUNCTION();
+
+  unsigned NumBytes = 0;
+
+  switch (Fixup.getKind()) {
+  default:
+    M86_END_FUNCTION();
+    return;
+  case llvm::M86::FIXUP_M86_PC16:
+    // Forcing a signed division because Value can be negative.
+    Value /= 4;
+    NumBytes = 2;
+    break;
+  }
+
+  unsigned Offset = Fixup.getOffset();
+  // For each byte of the fragment that the fixup touches, mask in the bits
+  // from the fixup value. The Value has been "split up" into the
+  // appropriate bitfields above.
+  for (unsigned I = 0; I != NumBytes; ++I) {
+    Data[Offset + I] |= std::uint8_t((Value >> (I * 8)) & 0xff);
+  }
+
   M86_END_FUNCTION();
-  return;
 }
 
 std::unique_ptr<llvm::MCObjectTargetWriter>
 llvm::M86ELFAsmBackend::createObjectTargetWriter() const {
   M86_START_FUNCTION();
-  uint8_t OSABI = llvm::MCELFObjectTargetWriter::getOSABI(OSType);
+  std::uint8_t OSABI = llvm::MCELFObjectTargetWriter::getOSABI(OSType);
   M86_END_FUNCTION();
   return llvm::createM86ELFObjectWriter(false, OSABI);
 }

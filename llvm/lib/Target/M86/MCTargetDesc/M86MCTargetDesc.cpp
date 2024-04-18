@@ -33,23 +33,17 @@ using namespace llvm;
 
 static llvm::MCRegisterInfo *createM86MCRegisterInfo(const llvm::Triple &TT) {
   M86_START_FUNCTION();
-
   llvm::MCRegisterInfo *X = new llvm::MCRegisterInfo();
-  llvm::InitM86MCRegisterInfo(X, llvm::M86::R0);
-
+  llvm::InitM86MCRegisterInfo(X, llvm::M86::RA);
   M86_END_FUNCTION();
-
   return X;
 }
 
 static llvm::MCInstrInfo *createM86MCInstrInfo() {
   M86_START_FUNCTION();
-
   llvm::MCInstrInfo *X = new llvm::MCInstrInfo();
   llvm::InitM86MCInstrInfo(X);
-
   M86_END_FUNCTION();
-
   return X;
 }
 
@@ -65,15 +59,12 @@ static llvm::MCAsmInfo *
 createM86MCAsmInfo(const llvm::MCRegisterInfo &MRI, const llvm::Triple &TT,
                    const llvm::MCTargetOptions &Options) {
   M86_START_FUNCTION();
-
   llvm::MCAsmInfo *MAI = new llvm::M86ELFMCAsmInfo(TT);
-  unsigned SP = MRI.getDwarfRegNum(llvm::M86::R0, true);
+  unsigned SP = MRI.getDwarfRegNum(llvm::M86::RS, true);
   llvm::MCCFIInstruction Inst =
       llvm::MCCFIInstruction::cfiDefCfa(nullptr, SP, 0);
   MAI->addInitialFrameState(Inst);
-
   M86_END_FUNCTION();
-
   return MAI;
 }
 
@@ -89,7 +80,10 @@ createM86MCInstPrinter(const llvm::Triple &T, unsigned SyntaxVariant,
 llvm::M86TargetStreamer::M86TargetStreamer(llvm::MCStreamer &MC)
     : llvm::MCTargetStreamer(MC) {
   M86_START_FUNCTION();
+  M86_END_FUNCTION();
 }
+
+llvm::M86TargetStreamer::~M86TargetStreamer() = default;
 
 static llvm::MCTargetStreamer *
 createM86TargetAsmStreamer(llvm::MCStreamer &S, llvm::formatted_raw_ostream &OS,
@@ -104,27 +98,35 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeM86TargetMC() {
   M86_START_FUNCTION();
 
   llvm::Target &TheM86Target = llvm::getTheM86Target();
-  // Register the MC assembler info.
-  llvm::TargetRegistry::RegisterMCAsmInfo(TheM86Target, createM86MCAsmInfo);
+  llvm::RegisterMCAsmInfoFn X(TheM86Target, createM86MCAsmInfo);
+
   // Register the MC register info.
   llvm::TargetRegistry::RegisterMCRegInfo(TheM86Target,
                                           createM86MCRegisterInfo);
+
   // Register the MC instruction info.
   llvm::TargetRegistry::RegisterMCInstrInfo(TheM86Target, createM86MCInstrInfo);
+
   // Register the MC subtarget info.
   llvm::TargetRegistry::RegisterMCSubtargetInfo(TheM86Target,
                                                 createM86MCSubtargetInfo);
+
   // Register the MC instruction printer.
   llvm::TargetRegistry::RegisterMCInstPrinter(TheM86Target,
                                               createM86MCInstPrinter);
+
   // Register the assembler M86 streamer.
   llvm::TargetRegistry::RegisterAsmTargetStreamer(TheM86Target,
                                                   createM86TargetAsmStreamer);
+
   // Register the MC code emitter.
   llvm::TargetRegistry::RegisterMCCodeEmitter(TheM86Target,
                                               createM86MCCodeEmitter);
   // Register the assembler backend.
   llvm::TargetRegistry::RegisterMCAsmBackend(TheM86Target, createM86AsmBackend);
+
+  // Register the MC assembler info.
+  // llvm::TargetRegistry::RegisterMCAsmInfo(TheM86Target, createM86MCAsmInfo);
 
   M86_END_FUNCTION();
 }

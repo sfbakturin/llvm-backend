@@ -47,30 +47,30 @@ unsigned llvm::M86InstrInfo::isStoreToStackSlot(const llvm::MachineInstr &MI,
   return 0;
 }
 
-static M86CC::CondCode getCondFromBranchOpc(unsigned Opc) {
+static llvm::M86CC::CondCode getCondFromBranchOpc(unsigned Opc) {
   M86_START_FUNCTION();
   switch (Opc) {
   default:
     M86_END_FUNCTION();
-    return M86CC::INVALID;
-  case M86::JEQ:
+    return llvm::M86CC::INVALID;
+  case llvm::M86::JEQ:
     M86_END_FUNCTION();
-    return M86CC::EQ;
-  case M86::JNE:
+    return llvm::M86CC::EQ;
+  case llvm::M86::JNE:
     M86_END_FUNCTION();
-    return M86CC::NE;
-  case M86::JLE:
+    return llvm::M86CC::NE;
+  case llvm::M86::JLE:
     M86_END_FUNCTION();
-    return M86CC::LE;
-  case M86::JGT:
+    return llvm::M86CC::LE;
+  case llvm::M86::JGT:
     M86_END_FUNCTION();
-    return M86CC::GT;
-  case M86::JLEU:
+    return llvm::M86CC::GT;
+  case llvm::M86::JLEU:
     M86_END_FUNCTION();
-    return M86CC::LEU;
-  case M86::JGTU:
+    return llvm::M86CC::LEU;
+  case llvm::M86::JGTU:
     M86_END_FUNCTION();
-    return M86CC::GTU;
+    return llvm::M86CC::GTU;
   }
 }
 
@@ -96,24 +96,24 @@ llvm::M86InstrInfo::getBrCond(llvm::M86CC::CondCode CC) const {
   default:
     M86_END_FUNCTION();
     llvm_unreachable("Unknown condition code!");
-  case M86CC::EQ:
+  case llvm::M86CC::EQ:
     M86_END_FUNCTION();
-    return get(M86::JEQ);
-  case M86CC::NE:
+    return get(llvm::M86::JEQ);
+  case llvm::M86CC::NE:
     M86_END_FUNCTION();
-    return get(M86::JNE);
-  case M86CC::LE:
+    return get(llvm::M86::JNE);
+  case llvm::M86CC::LE:
     M86_END_FUNCTION();
-    return get(M86::JLE);
-  case M86CC::GT:
+    return get(llvm::M86::JLE);
+  case llvm::M86CC::GT:
     M86_END_FUNCTION();
-    return get(M86::JGT);
-  case M86CC::LEU:
+    return get(llvm::M86::JGT);
+  case llvm::M86CC::LEU:
     M86_END_FUNCTION();
-    return get(M86::JLEU);
-  case M86CC::GTU:
+    return get(llvm::M86::JLEU);
+  case llvm::M86CC::GTU:
     M86_END_FUNCTION();
-    return get(M86::JGTU);
+    return get(llvm::M86::JGTU);
   }
 }
 
@@ -124,24 +124,24 @@ llvm::M86CC::getOppositeBranchCondition(llvm::M86CC::CondCode CC) {
   default:
     M86_END_FUNCTION();
     llvm_unreachable("Unrecognized conditional branch");
-  case M86CC::EQ:
+  case llvm::M86CC::EQ:
     M86_END_FUNCTION();
-    return M86CC::NE;
-  case M86CC::NE:
+    return llvm::M86CC::NE;
+  case llvm::M86CC::NE:
     M86_END_FUNCTION();
-    return M86CC::EQ;
-  case M86CC::LE:
+    return llvm::M86CC::EQ;
+  case llvm::M86CC::LE:
     M86_END_FUNCTION();
-    return M86CC::GT;
-  case M86CC::GT:
+    return llvm::M86CC::GT;
+  case llvm::M86CC::GT:
     M86_END_FUNCTION();
-    return M86CC::LE;
-  case M86CC::LEU:
+    return llvm::M86CC::LE;
+  case llvm::M86CC::LEU:
     M86_END_FUNCTION();
-    return M86CC::GTU;
-  case M86CC::GTU:
+    return llvm::M86CC::GTU;
+  case llvm::M86CC::GTU:
     M86_END_FUNCTION();
-    return M86CC::LEU;
+    return llvm::M86CC::LEU;
   }
 }
 
@@ -150,6 +150,7 @@ bool llvm::M86InstrInfo::analyzeBranch(
     llvm::MachineBasicBlock *&FBB,
     llvm::SmallVectorImpl<llvm::MachineOperand> &Cond, bool AllowModify) const {
   M86_START_FUNCTION();
+
   TBB = FBB = nullptr;
   Cond.clear();
 
@@ -226,9 +227,12 @@ bool llvm::M86InstrInfo::analyzeBranch(
 unsigned llvm::M86InstrInfo::removeBranch(llvm::MachineBasicBlock &MBB,
                                           int *BytesRemoved) const {
   M86_START_FUNCTION();
+
   if (BytesRemoved)
     *BytesRemoved = 0;
+
   llvm::MachineBasicBlock::iterator I = MBB.getLastNonDebugInstr();
+
   if (I == MBB.end()) {
     M86_END_FUNCTION();
     return 0;
@@ -296,6 +300,7 @@ void llvm::M86InstrInfo::storeRegToStackSlot(
     const llvm::TargetRegisterClass *RC, const llvm::TargetRegisterInfo *TRI,
     llvm::Register VReg) const {
   M86_START_FUNCTION();
+
   llvm::DebugLoc DL;
   if (I != MBB.end())
     DL = I->getDebugLoc();
@@ -313,6 +318,7 @@ void llvm::M86InstrInfo::storeRegToStackSlot(
       .addFrameIndex(FI)
       .addImm(0)
       .addMemOperand(MMO);
+
   M86_END_FUNCTION();
 }
 
@@ -367,7 +373,8 @@ unsigned llvm::M86InstrInfo::insertBranch(
 
   // Unconditional branch.
   if (Cond.empty()) {
-    llvm::MachineInstr &MI = *BuildMI(&MBB, DL, get(M86::JMPL)).addMBB(TBB);
+    llvm::MachineInstr &MI =
+        *BuildMI(&MBB, DL, get(llvm::M86::JMPL)).addMBB(TBB);
     if (BytesAdded)
       *BytesAdded += getInstSizeInBytes(MI);
     M86_END_FUNCTION();

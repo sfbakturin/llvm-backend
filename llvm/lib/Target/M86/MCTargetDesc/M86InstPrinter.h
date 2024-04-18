@@ -29,9 +29,8 @@ public:
   void printRegName(raw_ostream &OS, MCRegister Reg) const override;
   void printInst(const MCInst *MI, std::uint64_t Address, StringRef Annot,
                  const MCSubtargetInfo &STI, raw_ostream &O) override;
-  void printBranchOperand(const MCInst *MI, uint64_t Address, unsigned OpNo,
-                          raw_ostream &O);
-
+  void printBranchOperand(const MCInst *MI, std::uint64_t Address,
+                          unsigned OpNo, raw_ostream &O);
   void printOperand(const MCInst *MI, int OpNo, raw_ostream &OS);
 };
 

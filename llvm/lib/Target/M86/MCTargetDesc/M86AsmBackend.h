@@ -39,11 +39,11 @@ public:
 
   /// fixupNeedsRelaxation - Target specific predicate for whether a given
   /// fixup requires the associated instruction to be relaxed.
-  bool fixupNeedsRelaxation(const MCFixup &Fixup, uint64_t Value,
+  bool fixupNeedsRelaxation(const MCFixup &Fixup, std::uint64_t Value,
                             const MCRelaxableFragment *DF,
                             const MCAsmLayout &Layout) const override;
 
-  bool writeNopData(raw_ostream &OS, uint64_t Count,
+  bool writeNopData(raw_ostream &OS, std::uint64_t Count,
                     const MCSubtargetInfo *STI) const override;
 };
 

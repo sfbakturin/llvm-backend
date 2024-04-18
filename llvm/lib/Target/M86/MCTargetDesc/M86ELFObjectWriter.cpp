@@ -29,9 +29,16 @@ unsigned llvm::M86ELFObjectWriter::getRelocType(llvm::MCContext &Ctx,
   M86_START_FUNCTION();
 
   llvm::MCFixupKind Kind = Fixup.getKind();
+
   if (Kind >= FirstLiteralRelocationKind) {
     M86_END_FUNCTION();
     return Kind - FirstLiteralRelocationKind;
+  }
+
+  if (Kind == FirstTargetFixupKind) {
+    // TODO rewrite taht it uses  directly value from table in  InfosLE
+    M86_END_FUNCTION();
+    return 0;
   }
 
   M86_END_FUNCTION();

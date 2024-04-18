@@ -71,33 +71,20 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
     setOperationAction(Opc, llvm::MVT::i32, Expand);
   }
 
-  setOperationAction(llvm::ISD::ADD, MVT::i32, Legal);
-  setOperationAction(llvm::ISD::MUL, MVT::i32, Legal);
+  setOperationAction(llvm::ISD::ADD, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::MUL, llvm::MVT::i32, Legal);
 
-  setOperationAction(llvm::ISD::LOAD, MVT::i32, Legal);
-  setOperationAction(llvm::ISD::STORE, MVT::i32, Legal);
+  setOperationAction(llvm::ISD::LOAD, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::STORE, llvm::MVT::i32, Legal);
 
-  setOperationAction(llvm::ISD::Constant, MVT::i32, Legal);
-  setOperationAction(llvm::ISD::UNDEF, MVT::i32, Legal);
+  setOperationAction(llvm::ISD::Constant, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::UNDEF, llvm::MVT::i32, Legal);
 
-  setOperationAction(llvm::ISD::BR_CC, MVT::i32, Custom);
+  setOperationAction(llvm::ISD::BR_CC, llvm::MVT::i32, Custom);
 
-  setOperationAction(llvm::ISD::FRAMEADDR, MVT::i32, Legal);
+  setOperationAction(llvm::ISD::FRAMEADDR, llvm::MVT::i32, Legal);
 
   M86_END_FUNCTION();
-}
-
-llvm::SDValue
-llvm::M86TargetLowering::LowerOperation(llvm::SDValue Op,
-                                        llvm::SelectionDAG &DAG) const {
-  switch (Op->getOpcode()) {
-  case llvm::ISD::BR_CC:
-    return lowerJCC(Op, DAG);
-  case llvm::ISD::FRAMEADDR:
-    return lowerFIAddress(Op, DAG);
-  default:
-    llvm_unreachable("");
-  }
 }
 
 const char *llvm::M86TargetLowering::getTargetNodeName(unsigned Opcode) const {
@@ -124,6 +111,23 @@ const char *llvm::M86TargetLowering::getTargetNodeName(unsigned Opcode) const {
 //===----------------------------------------------------------------------===//
 
 #include <M86GenCallingConv.inc>
+
+llvm::SDValue
+llvm::M86TargetLowering::LowerOperation(llvm::SDValue Op,
+                                        llvm::SelectionDAG &DAG) const {
+  M86_START_FUNCTION();
+  switch (Op->getOpcode()) {
+  case llvm::ISD::BR_CC:
+    M86_END_FUNCTION();
+    return lowerJCC(Op, DAG);
+  case llvm::ISD::FRAMEADDR:
+    M86_END_FUNCTION();
+    return lowerFIAddress(Op, DAG);
+  default:
+    M86_END_FUNCTION();
+    llvm_unreachable("");
+  }
+}
 
 //===----------------------------------------------------------------------===//
 //                  Call Calling Convention Implementation
@@ -225,7 +229,7 @@ llvm::SDValue llvm::M86TargetLowering::LowerCall(
       }
       llvm::SDValue SpillSlot =
           DAG.CreateStackTemporary(StoredSize, StackAlign);
-      int FI = cast<llvm::FrameIndexSDNode>(SpillSlot)->getIndex();
+      int FI = llvm::cast<llvm::FrameIndexSDNode>(SpillSlot)->getIndex();
       MemOpChains.push_back(
           DAG.getStore(Chain, DL, ArgValue, SpillSlot,
                        llvm::MachinePointerInfo::getFixedStack(MF, FI)));
@@ -255,7 +259,7 @@ llvm::SDValue llvm::M86TargetLowering::LowerCall(
 
       // Work out the address of the stack slot.
       if (!StackPtr.getNode())
-        StackPtr = DAG.getCopyFromReg(Chain, DL, llvm::M86::R1, PtrVT);
+        StackPtr = DAG.getCopyFromReg(Chain, DL, llvm::M86::RS, PtrVT);
       llvm::SDValue Address =
           DAG.getNode(llvm::ISD::ADD, DL, PtrVT, StackPtr,
                       DAG.getIntPtrConstant(VA.getLocMemOffset(), DL));
@@ -281,7 +285,7 @@ llvm::SDValue llvm::M86TargetLowering::LowerCall(
 
   // No external symbols support
   if (llvm::GlobalAddressSDNode *S =
-          dyn_cast<llvm::GlobalAddressSDNode>(Callee)) {
+          llvm::dyn_cast<llvm::GlobalAddressSDNode>(Callee)) {
     // llvm_unreachable("How do i suppose to lower this?");
     const llvm::GlobalValue *GV = S->getGlobal();
     assert(getTargetMachine().shouldAssumeDSOLocal(*GV->getParent(), GV));
@@ -481,6 +485,8 @@ llvm::SDValue llvm::M86TargetLowering::LowerFormalArguments(
     const llvm::SmallVectorImpl<llvm::ISD::InputArg> &Ins,
     const llvm::SDLoc &DL, llvm::SelectionDAG &DAG,
     llvm::SmallVectorImpl<llvm::SDValue> &InVals) const {
+  M86_START_FUNCTION();
+
   switch (CallConv) {
   default:
     report_fatal_error("Unsupported calling convention");
@@ -519,9 +525,9 @@ llvm::SDValue llvm::M86TargetLowering::LowerFormalArguments(
         unsigned PartOffset = Ins[i + 1].PartOffset - ArgPartOffset;
         llvm::SDValue Offset = DAG.getIntPtrConstant(PartOffset, DL);
         llvm::SDValue Address =
-            DAG.getNode(ISD::ADD, DL, PtrVT, ArgValue, Offset);
+            DAG.getNode(llvm::ISD::ADD, DL, PtrVT, ArgValue, Offset);
         InVals.push_back(DAG.getLoad(PartVA.getValVT(), DL, Chain, Address,
-                                     MachinePointerInfo()));
+                                     llvm::MachinePointerInfo()));
         ++i;
       }
       continue;
@@ -599,6 +605,8 @@ llvm::SDValue llvm::M86TargetLowering::LowerFormalArguments(
   }
 
   return Chain;
+
+  M86_END_FUNCTION();
 }
 
 //===----------------------------------------------------------------------===//
@@ -633,7 +641,7 @@ llvm::SDValue llvm::M86TargetLowering::LowerReturn(
   M86_START_FUNCTION();
 
   const llvm::MachineFunction &MF = DAG.getMachineFunction();
-  const llvm::M86Subtarget &STI = MF.getSubtarget<M86Subtarget>();
+  const llvm::M86Subtarget &STI = MF.getSubtarget<llvm::M86Subtarget>();
 
   // Stores the assignment of the return value to a location.
   llvm::SmallVector<llvm::CCValAssign, 16> RVLocs;
@@ -726,12 +734,15 @@ bool llvm::M86TargetLowering::isLegalAddressingMode(
 
 bool llvm::M86TargetLowering::mayBeEmittedAsTailCall(
     const llvm::CallInst *CI) const {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
   return false;
 }
 
 static void translateSetCCForBranch(const llvm::SDLoc &DL, llvm::SDValue &LHS,
                                     llvm::SDValue &RHS, llvm::ISD::CondCode &CC,
                                     llvm::SelectionDAG &DAG) {
+  M86_START_FUNCTION();
   switch (CC) {
   default:
     break;
@@ -741,11 +752,13 @@ static void translateSetCCForBranch(const llvm::SDLoc &DL, llvm::SDValue &LHS,
     std::swap(LHS, RHS);
     break;
   }
+  M86_END_FUNCTION();
 }
 
 llvm::SDValue
 llvm::M86TargetLowering ::lowerJCC(llvm::SDValue Op,
                                    llvm::SelectionDAG &DAG) const {
+  M86_START_FUNCTION();
   llvm::SDValue CC = Op.getOperand(1);
   llvm::SDValue LHS = Op.getOperand(2);
   llvm::SDValue RHS = Op.getOperand(3);
@@ -757,7 +770,7 @@ llvm::M86TargetLowering ::lowerJCC(llvm::SDValue Op,
   llvm::ISD::CondCode CCVal = llvm::cast<llvm::CondCodeSDNode>(CC)->get();
   translateSetCCForBranch(DL, LHS, RHS, CCVal, DAG);
   llvm::SDValue TargetCC = DAG.getCondCode(CCVal);
-
+  M86_END_FUNCTION();
   return DAG.getNode(llvm::M86ISD::JCC, DL, Op.getValueType(), Op.getOperand(0),
                      LHS, RHS, TargetCC, Block);
 }
@@ -765,6 +778,7 @@ llvm::M86TargetLowering ::lowerJCC(llvm::SDValue Op,
 llvm::SDValue
 llvm::M86TargetLowering ::lowerFIAddress(llvm::SDValue Op,
                                          llvm::SelectionDAG &DAG) const {
+  M86_START_FUNCTION();
   const llvm::M86RegisterInfo &RI = *STI.getRegisterInfo();
   llvm::MachineFunction &MF = DAG.getMachineFunction();
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
@@ -777,5 +791,6 @@ llvm::M86TargetLowering ::lowerFIAddress(llvm::SDValue Op,
   // Only for current frame
   assert(llvm::cast<llvm::ConstantSDNode>(Op.getOperand(0))->getZExtValue() ==
          0);
+  M86_END_FUNCTION();
   return FrameAddr;
 }
