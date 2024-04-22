@@ -209,6 +209,8 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
   case dxil:        return "dx";
 
   case xtensa:      return "xtensa";
+
+  case m86:         return "m86";
   }
 }
 
@@ -573,6 +575,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
     .Case("loongarch64", Triple::loongarch64)
     .Case("dxil", Triple::dxil)
     .Case("xtensa", Triple::xtensa)
+    .Case("m86", Triple::m86)
     .Default(Triple::UnknownArch);
 
   // Some architectures require special parsing logic just to compute the
@@ -1730,6 +1733,7 @@ Triple Triple::getBigEndianArchVariant() const {
   case Triple::spirv64:
   case Triple::wasm32:
   case Triple::wasm64:
+  case Triple::m86:
   case Triple::x86:
   case Triple::x86_64:
   case Triple::xcore:
@@ -1843,6 +1847,7 @@ bool Triple::isLittleEndian() const {
   case Triple::ve:
   case Triple::wasm32:
   case Triple::wasm64:
+  case Triple::m86:
   case Triple::x86:
   case Triple::x86_64:
   case Triple::xcore:
