@@ -73,6 +73,8 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
 
   setOperationAction(llvm::ISD::ADD, llvm::MVT::i32, Legal);
   setOperationAction(llvm::ISD::MUL, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::SUB, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::SHL, llvm::MVT::i32, Legal);
 
   setOperationAction(llvm::ISD::LOAD, llvm::MVT::i32, Legal);
   setOperationAction(llvm::ISD::STORE, llvm::MVT::i32, Legal);

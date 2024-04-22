@@ -211,13 +211,23 @@ def JMPA : M86Instruction<
 	[(brind GPR:$Dst)]
 >;
 
+//// JMPD - JuMP to Direct address, unconditional and inderect jump to address.
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Src = 0 in
+def JMPD : M86Instruction<
+	0x00,
+	(outs GPR:$Dst),
+	(ins m86_ctarget:$Acc),
+	"JMPD $Dst $Acc",
+	[]
+>;
+
 //// JMPI - JuMP to Indirect address, unconditional and inderect jump to address.
-let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Dst = 0 in
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Acc = 0 in
 def JMPI : M86Instruction<
 	0x00,
-	(outs GPR:$Src),
-	(ins m86_ctarget:$Acc),
-	"JMPI $Src $Acc",
+	(outs GPR:$Dst),
+	(ins GPR:$Src),
+	"JMPI $Dst $Src",
 	[]
 >;
 
@@ -230,19 +240,23 @@ def RET : M86Microcode<
 	[(m86_ret)]
 >, PseudoInstExpansion<(JMPA R1)>;
 
-//// CALL - CALL the function, unconditional jump to function address with saving arguments.
+//// CALLD - CALL Directly the function, unconditional jump to function address with saving arguments.
 let isCall = 1, Defs = [R0] in
-def CALL : M86Microcode<
+def CALLD : M86Microcode<
 	(outs),
 	(ins m86_ctarget:$Acc),
 	"# CALL",
 	[(m86_call tglobaladdr:$Acc)]
->, PseudoInstExpansion<(JMPI R0, m86_ctarget:$Acc)>;
+>, PseudoInstExpansion<(JMPD R1, m86_ctarget:$Acc)>;
 
-// let isCall = 1, Defs = [R0] in
-// def PseudoCALLInd : SimPseudoInst<(outs), (ins GPR:$r1), "# PseudoCALLInd",
-//                     [(sim_call GPR:$r1)]>,
-//                     PseudoInstExpansion<(BLR R0, GPR:$r1)>;
+//// CALLI - CALL Inderectly the function, unconditional jump to function address with saving arguments.
+let isCall = 1, Defs = [R0] in
+def CALLI : M86Microcode<
+	(outs),
+	(ins GPR:$Dst),
+	"# CALL (inderect)",
+	[(m86_call GPR:$Dst)]
+>, PseudoInstExpansion<(JMPI R1, GPR:$Dst)>;
 
 //// JEQ - Jump if EQual, conditional jump if two operands equals.
 def JEQ  : M86TemplateJCC<0x00, "JEQ">;
@@ -303,14 +317,17 @@ def MEMST : M86Instruction<
 	"MEMST $Dst ${Src} ${Acc}",
 	[]
 >;
+
 def : Pat<
 	(store (i32 GPR:$Dst), m86_baseaddr:$Src),
 	(MEMST GPR:$Dst, m86_baseaddr:$Src, 0)
 >;
+
 def : Pat<
 	(store (i32 GPR:$Dst), (add m86_baseaddr:$Src, m86_simm:$Acc)),
 	(MEMST GPR:$Dst, m86_baseaddr:$Src, m86_simm:$Acc)
 >;
+
 def : Pat<
 	(store (i32 GPR:$Dst), (IsOrAdd m86_fiaddr:$Src, m86_simm:$Acc)),
 	(MEMST GPR:$Dst, m86_fiaddr:$Src, m86_simm:$Acc)
@@ -324,13 +341,17 @@ def MEMLD : M86Instruction<
 	"MEMLD $Dst ${Src} ${Acc}",
 	[]
 >;
+
 def : Pat<
-	(i32 (load m86_baseaddr:$Src)),
-	(MEMLD m86_baseaddr:$Src, 0)
+	(i32 (load GPR:$Src)),
+	(MEMLD GPR:$Src, 0)
 >;
+
 def : Pat<
 	(i32 (load (add m86_baseaddr:$Src, m86_simm:$Acc))),
-	(MEMLD m86_baseaddr:$Src, m86_simm:$Acc)>;
+	(MEMLD m86_baseaddr:$Src, m86_simm:$Acc)
+>;
+
 def : Pat<
 	(i32 (load (IsOrAdd m86_fiaddr:$Src, m86_simm:$Acc))),
 	(MEMLD m86_fiaddr:$Src, m86_simm:$Acc)
@@ -338,9 +359,46 @@ def : Pat<
 
 // Arithmetics.
 
+
 //// ADDR - register ADD with Register.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
-def ADDR : M86Instruction<
+def SUB : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, GPR:$Src),
+	"SUB $Dst $Src",
+	[
+		(set GPR:$Dst_out, (sub GPR:$Dst, GPR:$Src))
+	]
+>;
+
+//// ADD2R - ADD with 2 Registers.
+let isCommutable = 1, isReMaterializable = 0 in
+def SUB2R : M86Instruction<
+	0x00,
+	(outs GPR:$Dst),
+	(ins GPR:$Src, GPR:$Acc),
+	"SUB $Dst $Src $Acc",
+	[
+		(set GPR:$Dst, (sub GPR:$Src, GPR:$Acc))
+	]
+>;
+
+//// ADDI - register ADD with Immediate.
+let isCommutable = 1, isReMaterializable = 0, Src = 0, Constraints = "$Dst = $Dst_out" in
+def SUBI : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, m86_simm:$Acc),
+	"SUB $Dst $Acc",
+	[
+		(set GPR:$Dst_out, (sub GPR:$Dst, m86_simm:$Acc))
+	]
+>;
+
+//// ADDR - register ADD with Register.
+let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
+def ADD : M86Instruction<
 	0x00,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
@@ -350,19 +408,31 @@ def ADDR : M86Instruction<
 	]
 >;
 
-//// ADDI - register ADD with Immediate.
-let isCommutable = 1, isReMaterializable = 0, Src = 0, Constraints = "$Dst = $Dst_out" in
-def ADDI : M86Instruction<
+//// ADD2R - ADD with 2 Registers.
+let isCommutable = 1, isReMaterializable = 0 in
+def ADD2R : M86Instruction<
 	0x00,
-	(outs GPR:$Dst_out),
-	(ins GPR:$Dst, m86_simm:$Acc),
-	"ADD $Dst $Acc",
+	(outs GPR:$Dst),
+	(ins GPR:$Src, GPR:$Acc),
+	"ADD $Dst $Src $Acc",
 	[
-		(set GPR:$Dst_out, (add GPR:$Dst, m86_simm:$Acc))
+		(set GPR:$Dst, (add GPR:$Src, GPR:$Acc))
 	]
 >;
 
-//// MUL - multiply of two operands.
+//// ADDI - register ADD with Immediate.
+let isCommutable = 1, isReMaterializable = 0, Src = 0 in
+def ADDI : M86Instruction<
+	0x00,
+	(outs GPR:$Dst),
+	(ins GPR:$Src, m86_simm:$Acc),
+	"ADD $Dst $Src $Acc",
+	[
+		(set GPR:$Dst, (add GPR:$Src, m86_simm:$Acc))
+	]
+>;
+
+//// MULR - multiply of two registers.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
 def MUL : M86Instruction<
 	0x00,
@@ -371,6 +441,30 @@ def MUL : M86Instruction<
 	"MUL $Dst $Src",
 	[
 		(set GPR:$Dst_out, (mul GPR:$Dst, GPR:$Src))
+	]
+>;
+
+//// MUL2R - multiply of two registers.
+let isCommutable = 1, isReMaterializable = 0 in
+def MUL2R : M86Instruction<
+	0x00,
+	(outs GPR:$Dst),
+	(ins GPR:$Src, GPR:$Acc),
+	"MUL $Dst $Src $Acc",
+	[
+		(set GPR:$Dst, (mul GPR:$Src, GPR:$Acc))
+	]
+>;
+
+//// MULI - multiply of register and immediate.
+let isCommutable = 1, isReMaterializable = 0, Src = 0, Constraints = "$Dst = $Dst_out" in
+def MULI : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, m86_simm:$Acc),
+	"MUL $Dst $Acc",
+	[
+		(set GPR:$Dst_out, (mul GPR:$Dst, m86_simm:$Acc))
 	]
 >;
 
@@ -395,6 +489,54 @@ def OR : M86Instruction<
 	"OR $Dst $Src",
 	[
 		(set GPR:$Dst_out, (or GPR:$Dst, GPR:$Src))
+	]
+>;
+
+//// AND - bitand of two operands.
+let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
+def AND : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, GPR:$Src),
+	"XOR $Dst $Src",
+	[
+		(set GPR:$Dst_out, (and GPR:$Dst, GPR:$Src))
+	]
+>;
+
+//// SHL - SHift Left.
+let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
+def SHL : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, GPR:$Src),
+	"SHL $Dst $Src",
+	[
+		(set GPR:$Dst_out, (shl GPR:$Dst, GPR:$Src))
+	]
+>;
+
+//// SHR - SHift Right.
+let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
+def SHR : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, GPR:$Src),
+	"SHL $Dst $Src",
+	[
+		(set GPR:$Dst_out, (srl GPR:$Dst, GPR:$Src))
+	]
+>;
+
+//// SRA - Shift Right Arithmetic.
+let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out" in
+def SRA : M86Instruction<
+	0x00,
+	(outs GPR:$Dst_out),
+	(ins GPR:$Dst, GPR:$Src),
+	"SRA $Dst $Src",
+	[
+		(set GPR:$Dst_out, (sra GPR:$Dst, GPR:$Src))
 	]
 >;
 
@@ -446,11 +588,114 @@ def : Pat<(i32 m86_i32li16:$Acc), (MOVTLI imm:$Acc)>;
 // i32 imm
 def : Pat<(i32 imm:$Acc), (ADDI (MOVTHI (m86_immhi imm:$Acc)), (m86_immli imm:$Acc))>;
 
+// Addresses
+def : Pat<
+	(add (i32 m86_fiaddr:$Src), (i32 m86_fiaddr:$Acc)),
+	(ADDI (i32 m86_fiaddr:$Src), (i32 m86_fiaddr:$Acc))
+>;
+
 def : Pat<
 	(add (i32 m86_fiaddr:$Src), m86_simm:$Acc),
 	(ADDI (i32 m86_fiaddr:$Src), m86_simm:$Acc)
 >;
+
 def : Pat<
 	(IsOrAdd (i32 m86_fiaddr:$Src), m86_simm:$Acc),
 	(ADDI (i32 m86_fiaddr:$Src), m86_simm:$Acc)
+>;
+
+// Instructions.
+def : Pat<
+	(add GPR:$Dst, (i32 m86_simm:$Acc)),
+	(ADD GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(add (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(ADD (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(sub GPR:$Dst, (i32 m86_simm:$Acc)),
+	(SUB GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(sub (i32 m86_simm:$Acc), GPR:$Src),
+	(SUB (MOVTLI imm:$Acc), GPR:$Src)
+>;
+
+def : Pat<
+	(sub (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(SUB (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(xor  GPR:$Dst, (i32 m86_simm:$Acc)),
+	(XOR GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(xor (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(XOR (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(or  GPR:$Dst, (i32 m86_simm:$Acc)),
+	(OR GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(or (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(OR (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(and  GPR:$Dst, (i32 m86_simm:$Acc)),
+	(AND GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(and (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(AND (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(mul  GPR:$Dst, (i32 m86_simm:$Acc)),
+	(MUL GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(mul (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(MUL (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(shl GPR:$Dst, (i32 m86_simm:$Acc)),
+	(SHL GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(shl (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(SHL (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(srl GPR:$Dst, (i32 m86_simm:$Acc)),
+	(SHR GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(srl (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(SHR (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(sra GPR:$Dst, (i32 m86_simm:$Acc)),
+	(SRA GPR:$Dst, (MOVTLI imm:$Acc))
+>;
+
+def : Pat<
+	(sra (i32 m86_simm:$Src), (i32 m86_simm:$Acc)),
+	(SRA (MOVTLI imm:$Src), (MOVTLI imm:$Acc))
 >;

@@ -10,6 +10,7 @@
   do {                                                                         \
     llvm::errs().changeColor(llvm::raw_ostream::RED);                          \
     llvm::errs() << "[START FUNCTION]" << ' ' << __FILE__ << '(' << __LINE__   \
+                                                                               \
                  << ')' << ':' << ' ' << __func__ << "\n";                     \
     llvm::errs().changeColor(llvm::raw_ostream::WHITE);                        \
   } while (false)
