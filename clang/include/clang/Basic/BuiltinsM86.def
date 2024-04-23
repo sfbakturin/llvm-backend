@@ -1,5 +1,6 @@
 ﻿BUILTIN(putpixel, "vUiUiUi", "nc")
 BUILTIN(flush, "v", "nc")
-BUILTIN(simrand, "v", "nc")
+BUILTIN(simrand, "Ui", "nc")
+BUILTIN(select, "UiUiUiUi", "nc")
 
 #undef BUILTIN

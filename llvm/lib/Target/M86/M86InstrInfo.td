@@ -180,13 +180,22 @@ def FLS : M86Instruction<
 >;
 
 //// RND - RaNDom number.
-let Dst = 0, Src = 0, Acc = 0 in
+let Src = 0, Acc = 0 in
 def RND : M86Instruction<
 	3,
-	(outs),
+	(outs GPR:$Dst),
 	(ins),
-	"RND",
-	[(int_m86_simrand)]
+	"RND $Dst",
+	[(set GPR:$Dst, (int_m86_simrand))]
+>;
+
+//// SELECT - SELECT value from truefy falsefy, if cond.
+def SELECT : M86Instruction<
+	3,
+	(outs GPR:$R2),
+	(ins GPR:$Dst, GPR:$Src, GPR:$Acc),
+	"SELECT $Dst $Src $Acc",
+	[(set GPR:$R2, (int_m86_select GPR:$Dst, GPR:$Src, GPR:$Acc))]
 >;
 
 // Control flow.
