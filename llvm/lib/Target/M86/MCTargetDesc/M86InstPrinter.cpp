@@ -98,3 +98,8 @@ void llvm::M86InstPrinter::printOperand(const llvm::MCInst *MI, int OpNo,
 
   M86_END_FUNCTION();
 }
+
+void llvm::M86InstPrinter::printCCOperand(const llvm::MCInst *MI, int OpNo,
+                                          llvm::raw_ostream &OS) {
+  OS << MI->getOperand(OpNo).getImm();
+}

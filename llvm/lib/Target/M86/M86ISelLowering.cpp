@@ -75,6 +75,11 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
   setOperationAction(llvm::ISD::MUL, llvm::MVT::i32, Legal);
   setOperationAction(llvm::ISD::SUB, llvm::MVT::i32, Legal);
   setOperationAction(llvm::ISD::SHL, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::SRL, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::AND, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::SRA, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::OR, llvm::MVT::i32, Legal);
+  setOperationAction(llvm::ISD::XOR, llvm::MVT::i32, Legal);
 
   setOperationAction(llvm::ISD::LOAD, llvm::MVT::i32, Legal);
   setOperationAction(llvm::ISD::STORE, llvm::MVT::i32, Legal);
@@ -84,8 +89,10 @@ llvm::M86TargetLowering::M86TargetLowering(const llvm::TargetMachine &TM,
 
   setOperationAction(llvm::ISD::BR_CC, llvm::MVT::i32, Custom);
 
+  setOperationAction(llvm::ISD::SELECT_CC, llvm::MVT::i32, Custom);
   setOperationAction(llvm::ISD::FRAMEADDR, llvm::MVT::i32, Legal);
   setOperationAction(llvm::ISD::INTRINSIC_VOID, llvm::MVT::i32, Custom);
+  setOperationAction(llvm::ISD::SIGN_EXTEND_INREG, llvm::MVT::i1, Custom);
 
   M86_END_FUNCTION();
 }
@@ -126,6 +133,15 @@ llvm::M86TargetLowering::LowerOperation(llvm::SDValue Op,
   case llvm::ISD::FRAMEADDR:
     M86_END_FUNCTION();
     return lowerFIAddress(Op, DAG);
+  case llvm::ISD::SELECT_CC:
+    M86_END_FUNCTION();
+    return lowerCondMOV(Op, DAG);
+  case llvm::ISD::SELECT:
+    M86_END_FUNCTION();
+    return lowerSELECT(Op, DAG);
+  case llvm::ISD::SIGN_EXTEND_INREG:
+    M86_END_FUNCTION();
+    return lowerSignExtendedInRegister(Op, DAG);
   default:
     M86_END_FUNCTION();
     llvm_unreachable("");
@@ -795,4 +811,51 @@ llvm::M86TargetLowering ::lowerFIAddress(llvm::SDValue Op,
          0);
   M86_END_FUNCTION();
   return FrameAddr;
+}
+
+llvm::SDValue
+llvm::M86TargetLowering::lowerCondMOV(llvm::SDValue Op,
+                                      llvm::SelectionDAG &DAG) const {
+  M86_START_FUNCTION();
+  llvm::SDValue LHS = Op.getOperand(0);
+  llvm::SDValue RHS = Op.getOperand(1);
+  llvm::ISD::CondCode CC =
+      llvm::cast<llvm::CondCodeSDNode>(Op.getOperand(4))->get();
+  llvm::SDValue TVal = Op.getOperand(2);
+  llvm::SDValue FVal = Op.getOperand(3);
+  llvm::SDLoc dl(Op);
+  translateSetCCForBranch(dl, LHS, RHS, CC, DAG);
+  llvm::SDValue TargetCC = DAG.getCondCode(CC);
+  M86_END_FUNCTION();
+  return DAG.getNode(llvm::M86ISD::CMOV, dl, TVal.getValueType(), TVal, FVal,
+                     TargetCC, LHS, RHS);
+}
+
+llvm::SDValue
+llvm::M86TargetLowering::lowerSELECT(llvm::SDValue Op,
+                                     llvm::SelectionDAG &DAG) const {
+  return Op;
+}
+
+llvm::SDValue llvm::M86TargetLowering::lowerSignExtendedInRegister(
+    llvm::SDValue Op, llvm::SelectionDAG &DAG) const {
+  llvm::SDValue Op0 = Op.getOperand(0);
+  llvm::SDLoc dl(Op);
+  assert(Op.getValueType() == llvm::MVT::i32 &&
+         "Unhandled target sign_extend_inreg.");
+  // These are legal
+  unsigned Width =
+      cast<llvm::VTSDNode>(Op.getOperand(1))->getVT().getSizeInBits();
+  if (Width == 16 || Width == 8)
+    return Op;
+  if (Width >= 32) {
+    return {};
+  }
+  llvm::SDValue LS =
+      DAG.getNode(llvm::ISD::SHL, dl, llvm::MVT::i32, Op0,
+                  DAG.getConstant(32 - Width, dl, llvm::MVT::i32));
+  llvm::SDValue SR =
+      DAG.getNode(llvm::ISD::SRA, dl, llvm::MVT::i32, LS,
+                  DAG.getConstant(32 - Width, dl, llvm::MVT::i32));
+  return SR;
 }

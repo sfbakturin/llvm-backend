@@ -70,3 +70,15 @@ unsigned llvm::M86MachineFunctionInfo::getReturnStackOffset() const {
   M86_END_FUNCTION();
   return ReturnStackOffset;
 }
+
+void llvm::M86MachineFunctionInfo::setMaxCallStackReq(unsigned Req) {
+  M86_START_FUNCTION();
+  MaxCallStackReq = Req;
+  M86_END_FUNCTION();
+}
+
+unsigned llvm::M86MachineFunctionInfo::getMaxCallStackReq() const {
+  M86_START_FUNCTION();
+  M86_END_FUNCTION();
+  return MaxCallStackReq;
+}

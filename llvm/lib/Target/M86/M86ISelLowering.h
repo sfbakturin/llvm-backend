@@ -28,6 +28,7 @@ enum NodeType : unsigned {
   RET,
   CALL,
   JCC,
+  CMOV,
 };
 
 } // namespace M86ISD
@@ -81,6 +82,9 @@ private:
 
   SDValue lowerJCC(SDValue Op, SelectionDAG &DAG) const;
   SDValue lowerFIAddress(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerCondMOV(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerSELECT(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerSignExtendedInRegister(SDValue Op, SelectionDAG &DAG) const;
 };
 
 } // end namespace llvm

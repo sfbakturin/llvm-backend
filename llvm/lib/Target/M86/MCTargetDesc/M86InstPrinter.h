@@ -32,6 +32,7 @@ public:
   void printBranchOperand(const MCInst *MI, std::uint64_t Address,
                           unsigned OpNo, raw_ostream &O);
   void printOperand(const MCInst *MI, int OpNo, raw_ostream &OS);
+  void printCCOperand(const MCInst *MI, int OpNo, raw_ostream &OS);
 };
 
 } // end namespace llvm

@@ -2,7 +2,7 @@ add_llvm_component_group(M86)
 
 set(LLVM_TARGET_DEFINITIONS M86.td)
 
-option(M86_DEBUG_PRINTOUT "Prints function name of M86 arch that is called with filename and lineno" OFF)
+option(M86_DEBUG_PRINTOUT "Prints function name of M86 arch that is called with filename and lineno" ON)
 
 tablegen(LLVM M86GenRegisterInfo.inc -gen-register-info)
 tablegen(LLVM M86GenInstrInfo.inc -gen-instr-info)
@@ -60,6 +60,10 @@ add_llvm_target(M86CodeGen
   ADD_TO_COMPONENT
   M86
   )
+
+if(M86_DEBUG_PRINTOUT)
+target_compile_definitions(M86CodeGen PUBLIC M86_DEBUG_PRINTOUT)
+endif()
 
 add_subdirectory(MCTargetDesc)
 add_subdirectory(TargetInfo)

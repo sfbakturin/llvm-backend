@@ -5,7 +5,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 
-#if M86_DEBUG_PRINTOUT == ON
+#if defined(M86_DEBUG_PRINTOUT)
 #define M86_START_FUNCTION()                                                   \
   do {                                                                         \
     llvm::errs().changeColor(llvm::raw_ostream::RED);                          \

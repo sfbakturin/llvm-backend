@@ -56,21 +56,39 @@ static llvm::M86CC::CondCode getCondFromBranchOpc(unsigned Opc) {
   case llvm::M86::JEQ:
     M86_END_FUNCTION();
     return llvm::M86CC::EQ;
-  case llvm::M86::JNE:
-    M86_END_FUNCTION();
-    return llvm::M86CC::NE;
-  case llvm::M86::JLE:
-    M86_END_FUNCTION();
-    return llvm::M86CC::LE;
   case llvm::M86::JGT:
     M86_END_FUNCTION();
     return llvm::M86CC::GT;
-  case llvm::M86::JLEU:
+  case llvm::M86::JGE:
     M86_END_FUNCTION();
-    return llvm::M86CC::LEU;
-  case llvm::M86::JGTU:
+    return llvm::M86CC::GE;
+  case llvm::M86::JLT:
     M86_END_FUNCTION();
-    return llvm::M86CC::GTU;
+    return llvm::M86CC::LT;
+  case llvm::M86::JLE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::LE;
+  case llvm::M86::JNE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::NE;
+  case llvm::M86::JUEQ:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UEQ;
+  case llvm::M86::JUGT:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UGT;
+  case llvm::M86::JUGE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UGE;
+  case llvm::M86::JULT:
+    M86_END_FUNCTION();
+    return llvm::M86CC::ULT;
+  case llvm::M86::JULE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::ULE;
+  case llvm::M86::JUNE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UNE;
   }
 }
 
@@ -99,21 +117,39 @@ llvm::M86InstrInfo::getBrCond(llvm::M86CC::CondCode CC) const {
   case llvm::M86CC::EQ:
     M86_END_FUNCTION();
     return get(llvm::M86::JEQ);
-  case llvm::M86CC::NE:
-    M86_END_FUNCTION();
-    return get(llvm::M86::JNE);
-  case llvm::M86CC::LE:
-    M86_END_FUNCTION();
-    return get(llvm::M86::JLE);
   case llvm::M86CC::GT:
     M86_END_FUNCTION();
     return get(llvm::M86::JGT);
-  case llvm::M86CC::LEU:
+  case llvm::M86CC::GE:
     M86_END_FUNCTION();
-    return get(llvm::M86::JLEU);
-  case llvm::M86CC::GTU:
+    return get(llvm::M86::JGE);
+  case llvm::M86CC::LT:
     M86_END_FUNCTION();
-    return get(llvm::M86::JGTU);
+    return get(llvm::M86::JLT);
+  case llvm::M86CC::LE:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JLE);
+  case llvm::M86CC::NE:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JNE);
+  case llvm::M86CC::UEQ:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JUEQ);
+  case llvm::M86CC::UGT:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JUGT);
+  case llvm::M86CC::UGE:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JUGE);
+  case llvm::M86CC::ULT:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JULT);
+  case llvm::M86CC::ULE:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JULE);
+  case llvm::M86CC::UNE:
+    M86_END_FUNCTION();
+    return get(llvm::M86::JUNE);
   }
 }
 
@@ -127,21 +163,39 @@ llvm::M86CC::getOppositeBranchCondition(llvm::M86CC::CondCode CC) {
   case llvm::M86CC::EQ:
     M86_END_FUNCTION();
     return llvm::M86CC::NE;
-  case llvm::M86CC::NE:
-    M86_END_FUNCTION();
-    return llvm::M86CC::EQ;
-  case llvm::M86CC::LE:
-    M86_END_FUNCTION();
-    return llvm::M86CC::GT;
   case llvm::M86CC::GT:
     M86_END_FUNCTION();
     return llvm::M86CC::LE;
-  case llvm::M86CC::LEU:
+  case llvm::M86CC::GE:
     M86_END_FUNCTION();
-    return llvm::M86CC::GTU;
-  case llvm::M86CC::GTU:
+    return llvm::M86CC::LT;
+  case llvm::M86CC::LT:
     M86_END_FUNCTION();
-    return llvm::M86CC::LEU;
+    return llvm::M86CC::GE;
+  case llvm::M86CC::LE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::GT;
+  case llvm::M86CC::NE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::EQ;
+  case llvm::M86CC::UEQ:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UNE;
+  case llvm::M86CC::UGT:
+    M86_END_FUNCTION();
+    return llvm::M86CC::ULE;
+  case llvm::M86CC::UGE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::ULT;
+  case llvm::M86CC::ULT:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UGE;
+  case llvm::M86CC::ULE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UGT;
+  case llvm::M86CC::UNE:
+    M86_END_FUNCTION();
+    return llvm::M86CC::UEQ;
   }
 }
 

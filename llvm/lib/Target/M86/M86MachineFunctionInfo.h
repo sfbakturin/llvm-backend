@@ -31,6 +31,9 @@ public:
   void setReturnStackOffset(unsigned Off);
   unsigned getReturnStackOffset() const;
 
+  void setMaxCallStackReq(unsigned Req);
+  unsigned getMaxCallStackReq() const;
+
 private:
   //  virtual void anchor();
 
@@ -43,6 +46,8 @@ private:
   int VarArgsSaveSize = 0;
   /// Size of stack frame to save callee saved registers
   unsigned CalleeSavedStackSize = 0;
+
+  unsigned MaxCallStackReq = 0;
 };
 
 } // end namespace llvm

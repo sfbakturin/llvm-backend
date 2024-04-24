@@ -230,8 +230,25 @@ bool llvm::M86FrameLowering::restoreCalleeSavedRegisters(
 void llvm::M86FrameLowering::processFunctionBeforeFrameFinalized(
     llvm::MachineFunction &MF, llvm::RegScavenger *RS) const {
   M86_START_FUNCTION();
+
   llvm::MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *UFI = MF.getInfo<llvm::M86MachineFunctionInfo>();
+  if (MFI.getCalleeSavedInfo().empty()) {
+    UFI->setCalleeSavedStackSize(0);
+    M86_END_FUNCTION();
+    return;
+  }
+
+  unsigned Size = 0;
+  for (const auto &Info : MFI.getCalleeSavedInfo()) {
+    int FrameIdx = Info.getFrameIdx();
+    if (MFI.getStackID(FrameIdx) != TargetStackID::Default)
+      continue;
+
+    Size += MFI.getObjectSize(FrameIdx);
+  }
+  UFI->setCalleeSavedStackSize(Size);
+
   M86_END_FUNCTION();
 }
 
@@ -372,8 +389,12 @@ void llvm::M86FrameLowering::adjustReg(llvm::MachineBasicBlock &MBB,
         .addImm(Val)
         .setMIFlag(Flag);
   } else {
-    // alloc vreg, load imm, add
-    llvm_unreachable("");
+    BuildMI(MBB, MBBI, DL, TII->get(llvm::M86::MOVTLI), llvm::M86::R2)
+        .addImm(Val)
+        .setMIFlag(Flag);
+    BuildMI(MBB, MBBI, DL, TII->get(llvm::M86::ADD), DestReg)
+        .addReg(llvm::M86::R2) // Загружаемая константа
+        .setMIFlag(Flag);
   }
 
   M86_END_FUNCTION();

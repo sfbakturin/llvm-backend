@@ -7,17 +7,23 @@ namespace llvm {
 
 namespace M86CC {
 
-enum CondCode { EQ, NE, LE, GT, LEU, GTU, INVALID };
+enum CondCode { EQ, GT, GE, LT, LE, NE, UEQ, UGT, UGE, ULT, ULE, UNE, INVALID };
 
 CondCode getOppositeBranchCondition(M86CC::CondCode cond);
 
 enum JccCondCode {
-  JEQ = 0x1,
-  JNE = 0x2,
-  JLE = 0x3,
-  JGT = 0x4,
-  JLEU = 0x5,
-  JGTU = 0x6
+  JEQ,
+  JGT,
+  JGE,
+  JLT,
+  JLE,
+  JNE,
+  JUEQ,
+  JUGT,
+  JUGE,
+  JULT,
+  JULE,
+  JUNE
 };
 
 } // namespace M86CC

@@ -30,11 +30,19 @@ class M86Instruction<bits<8> op, dag outs, dag ins, string asmstr, list<dag> pat
 	bits<4>  Dst;
 	bits<4>  Src;
 	bits<16> Acc;
+	bits<4>  AR1;
+	bits<4>  AR2;
+	bits<4>  AR3;
+	bits<4>  AR4;
 
 	let Inst{31-24} = Opcode;
 	let Inst{23-20} = Dst;
 	let Inst{19-16} = Src;
 	let Inst{15-0}  = Acc;
+	let Inst{15-12} = AR1;
+	let Inst{11-8}  = AR2;
+	let Inst{7-4}   = AR3;
+	let Inst{3-0}   = AR4;
 
 	let OutOperandList = outs;
 	let InOperandList  = ins;
