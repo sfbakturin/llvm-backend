@@ -26,6 +26,7 @@
 #include "Targets/Le64.h"
 #include "Targets/LoongArch.h"
 #include "Targets/M68k.h"
+#include "Targets/M86.h"
 #include "Targets/MSP430.h"
 #include "Targets/Mips.h"
 #include "Targets/NVPTX.h"
@@ -530,6 +531,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
 
   case llvm::Triple::tcele:
     return std::make_unique<TCELETargetInfo>(Triple, Opts);
+
+  case llvm::Triple::m86:
+    return std::make_unique<M86TargetInfo>(Triple, Opts);
 
   case llvm::Triple::x86:
     if (Triple.isOSDarwin())
