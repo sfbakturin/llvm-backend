@@ -165,7 +165,7 @@ class M86TemplateJCC<bits<8> op, string opcodestr> : M86Instruction<
 //// CMOVEQ - Conditional MOVe when EQuals.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVEQ : M86Instruction<
-	1,
+	0xF0,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVEQ $Dst $Src $Acc $AR1",
@@ -175,7 +175,7 @@ def CMOVEQ : M86Instruction<
 //// CMOVGT - Conditional MOVe when Greater Than.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVGT : M86Instruction<
-	1,
+	0xF1,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVGT $Dst $Src $Acc $AR1",
@@ -185,7 +185,7 @@ def CMOVGT : M86Instruction<
 //// CMOVGE - Conditional MOVe when Greater than or Equals.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVGE : M86Instruction<
-	1,
+	0xF2,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVGE $Dst $Src $Acc $AR1",
@@ -195,7 +195,7 @@ def CMOVGE : M86Instruction<
 //// CMOVLT - Conditional MOVe when Less Than.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVLT : M86Instruction<
-	1,
+	0xF3,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVLT $Dst $Src $Acc $AR1",
@@ -205,7 +205,7 @@ def CMOVLT : M86Instruction<
 //// CMOVLE - Conditional MOVe when Less than or Equals.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVLE : M86Instruction<
-	1,
+	0xF4,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVLE $Dst $Src $Acc $AR1",
@@ -215,7 +215,7 @@ def CMOVLE : M86Instruction<
 //// CMOVNE - Conditional MOVe when Not Equals.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVNE : M86Instruction<
-	1,
+	0xF5,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVNE $Dst $Src $Acc $AR1",
@@ -225,7 +225,7 @@ def CMOVNE : M86Instruction<
 //// CMOVUEQ - Conditional MOVe when EQuals as Unsigned.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVUEQ : M86Instruction<
-	1,
+	0xF6,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVUEQ $Dst $Src $Acc $AR1",
@@ -235,7 +235,7 @@ def CMOVUEQ : M86Instruction<
 //// CMOVUGT - Conditional MOVe when Greater Than as Unsigned.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVUGT : M86Instruction<
-	1,
+	0xF7,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVUGT $Dst $Src $Acc $AR1",
@@ -245,7 +245,7 @@ def CMOVUGT : M86Instruction<
 //// CMOVUGE - Conditional MOVe when Greater than or Equals as Unsigned.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVUGE : M86Instruction<
-	1,
+	0xF8,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVUGE $Dst $Src $Acc $AR1",
@@ -255,7 +255,7 @@ def CMOVUGE : M86Instruction<
 //// CMOVULT - Conditional MOVe when Less Than as Unsigned.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVULT : M86Instruction<
-	1,
+	0xF9,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVULT $Dst $Src $Acc $AR1",
@@ -265,7 +265,7 @@ def CMOVULT : M86Instruction<
 //// CMOVULE - Conditional MOVe when Less than or Equals as Unsigned.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVULE : M86Instruction<
-	1,
+	0xFA,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVULE $Dst $Src $Acc $AR1",
@@ -275,7 +275,7 @@ def CMOVULE : M86Instruction<
 //// CMOVUNE - Conditional MOVe when Not Equals as Unsigned.
 let Constraints = "$Dst_out = $Dst", AR2 = 0, AR3 = 0, AR4 = 0 in
 def CMOVUNE : M86Instruction<
-	1,
+	0xFB,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc, GPR:$AR1),
 	"CMOVUNE $Dst $Src $Acc $AR1",
@@ -287,7 +287,7 @@ def CMOVUNE : M86Instruction<
 //// PP - Put Pixel.
 let AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def PP : M86Instruction<
-	1,
+	0x01,
 	(outs),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc),
 	"PP $Dst $Src $Acc",
@@ -297,7 +297,7 @@ def PP : M86Instruction<
 //// FLS - FLuSh to screen.
 let Dst = 0, Src = 0, Acc = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def FLS : M86Instruction<
-	2,
+	0x02,
 	(outs),
 	(ins),
 	"FLS",
@@ -307,7 +307,7 @@ def FLS : M86Instruction<
 //// RND - RaNDom number.
 let Src = 0, Acc = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def RND : M86Instruction<
-	3,
+	0x03,
 	(outs GPR:$Dst),
 	(ins),
 	"RND $Dst",
@@ -317,7 +317,7 @@ def RND : M86Instruction<
 //// SELECT - SELECT value from truefy falsefy, if cond.
 let AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def SELECT : M86Instruction<
-	3,
+	0x04,
 	(outs GPR:$R2),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc),
 	"SELECT $Dst $Src $Acc",
@@ -329,7 +329,7 @@ def SELECT : M86Instruction<
 //// JMPL - JuMP to Label, unconditional jump by offset.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isBarrier = 1, isBranch = 1, isTerminator = 1, Dst = 0, Src = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def JMPL : M86Instruction<
-	0x00,
+	0xBA,
 	(outs),
 	(ins m86_btarget:$Acc),
 	"JMPL $Acc",
@@ -339,7 +339,7 @@ def JMPL : M86Instruction<
 //// JMPA - JuMP to Address, unconditional jump to address.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Src = 0, Acc = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def JMPA : M86Instruction<
-	0x00,
+	0xBB,
 	(outs),
 	(ins GPR:$Dst),
 	"JMPA $Dst",
@@ -349,7 +349,7 @@ def JMPA : M86Instruction<
 //// JMPD - JuMP to Direct address, unconditional and inderect jump to address.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Src = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def JMPD : M86Instruction<
-	0x00,
+	0xBC,
 	(outs GPR:$Dst),
 	(ins m86_ctarget:$Acc),
 	"JMPD $Dst $Acc",
@@ -359,7 +359,7 @@ def JMPD : M86Instruction<
 //// JMPI - JuMP to Indirect address, unconditional and inderect jump to address.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCall = 1, isBranch = 1, isTerminator = 1, Acc = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def JMPI : M86Instruction<
-	0x00,
+	0xBD,
 	(outs GPR:$Dst),
 	(ins GPR:$Src),
 	"JMPI $Dst $Src",
@@ -394,40 +394,40 @@ def CALLI : M86Microcode<
 >, PseudoInstExpansion<(JMPI R1, GPR:$Dst)>;
 
 //// JEQ - Jump if EQual, conditional jump if two operands equals.
-def JEQ  : M86TemplateJCC<0x00, "JEQ">;
+def JEQ  : M86TemplateJCC<0xB0, "JEQ">;
 
 //// JGT - Jump if Greater Than, conditional jump if left operand greater than right operand.
-def JGT  : M86TemplateJCC<0x00, "JGT">;
+def JGT  : M86TemplateJCC<0xB1, "JGT">;
 
 //// JGE - Jump if Greater/Equals, conditional jump if left operand greater than or equals right operand.
-def JGE  : M86TemplateJCC<0x00, "JGE">;
+def JGE  : M86TemplateJCC<0xB2, "JGE">;
 
 //// JLT - Jump if Less Than, conditional jump if left operand less than right operand.
-def JLT  : M86TemplateJCC<0x00, "JLT">;
+def JLT  : M86TemplateJCC<0xB3, "JLT">;
 
 //// JLE - Jump if Less/Equals, conditional jump if left operand less than or equals right operand.
-def JLE  : M86TemplateJCC<0x00, "JLE">;
+def JLE  : M86TemplateJCC<0xB4, "JLE">;
 
 //// JNE - Jump if Not Equal, conditional jump if two operands not equals.
-def JNE  : M86TemplateJCC<0x00, "JNE">;
+def JNE  : M86TemplateJCC<0xB5, "JNE">;
 
 //// JUEQ - Jump if Unsigned EQual, conditional jump if two operands equals.
-def JUEQ  : M86TemplateJCC<0x00, "JUEQ">;
+def JUEQ  : M86TemplateJCC<0xC0, "JUEQ">;
 
 //// JUGT - Jump if Unsigned Greater Than, conditional jump if left operand greater than right operand.
-def JUGT  : M86TemplateJCC<0x00, "JUGT">;
+def JUGT  : M86TemplateJCC<0xC1, "JUGT">;
 
 //// JUGE - Jump if Unsigned Greater/Equals, conditional jump if left operand greater than or equals right operand.
-def JUGE  : M86TemplateJCC<0x00, "JUGE">;
+def JUGE  : M86TemplateJCC<0xC2, "JUGE">;
 
 //// JULT - Jump if Unsigned Less Than, conditional jump if left operand less than right operand.
-def JULT  : M86TemplateJCC<0x00, "JULT">;
+def JULT  : M86TemplateJCC<0xC3, "JULT">;
 
 //// JULE - Jump if Unsigned Less/Equals, conditional jump if left operand less than or equals right operand.
-def JULE  : M86TemplateJCC<0x00, "JULE">;
+def JULE  : M86TemplateJCC<0xC4, "JULE">;
 
 //// JUNE - Jump if Unsigned Not Equal, conditional jump if two operands not equals.
-def JUNE  : M86TemplateJCC<0x00, "JUNE">;
+def JUNE  : M86TemplateJCC<0xC5, "JUNE">;
 
 def : M86PatternJCC<SETEQ,  JEQ>;
 def : M86PatternJCC<SETGT,  JGT>;
@@ -448,7 +448,7 @@ def : M86PatternJCC<SETUNE, JUNE>;
 //// MOVTLI - MOVe Low 16 bits Immediate value To register.
 let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1, Src = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def MOVTLI : M86Instruction<
-	0x00,
+	0x10,
 	(outs GPR:$Dst),
 	(ins m86_i32li16:$Acc),
 	"MOVTLI $Dst $Acc",
@@ -458,7 +458,7 @@ def MOVTLI : M86Instruction<
 //// MOVTHI - MOVe High 16 bits Immediate value To register.
 let isAsCheapAsAMove = 1, isCodeGenOnly = 1, isReMaterializable = 1, Src = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def MOVTHI : M86Instruction<
-	0x00,
+	0x11,
 	(outs GPR:$Dst),
 	(ins m86_i32hi16:$Acc),
 	"MOVTHI $Dst $Acc",
@@ -468,7 +468,7 @@ def MOVTHI : M86Instruction<
 //// MEMST - MEMory STore value to.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def MEMST : M86Instruction<
-	0x00,
+	0x12,
 	(outs),
 	(ins GPR:$Dst, GPR:$Src, m86_simm:$Acc),
 	"MEMST $Dst ${Src} ${Acc}",
@@ -493,7 +493,7 @@ def : Pat<
 //// MEMLD - MEMory LoaD value from.
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def MEMLD : M86Instruction<
-	0x00,
+	0x13,
 	(outs GPR:$Dst), (ins GPR:$Src, m86_simm:$Acc),
 	"MEMLD $Dst ${Src} ${Acc}",
 	[]
@@ -519,7 +519,7 @@ def : Pat<
 //// ADDI - register ADD with Immediate.
 let isCommutable = 1, isReMaterializable = 0, Src = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def ADDI : M86Instruction<
-	0x00,
+	0xA0,
 	(outs GPR:$Dst),
 	(ins GPR:$Src, m86_simm:$Acc),
 	"ADD $Dst $Src $Acc",
@@ -531,7 +531,7 @@ def ADDI : M86Instruction<
 //// ADD - register ADD with register.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def ADD : M86Instruction<
-	0x00,
+	0xA1,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"ADD $Dst $Src",
@@ -543,7 +543,7 @@ def ADD : M86Instruction<
 //// SUB - register SUB with register.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def SUB : M86Instruction<
-	0x00,
+	0xA2,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"SUB $Dst $Src",
@@ -555,7 +555,7 @@ def SUB : M86Instruction<
 //// MUL - MULtiply of two registers.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def MUL : M86Instruction<
-	0x00,
+	0xA3,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"MUL $Dst $Src",
@@ -567,7 +567,7 @@ def MUL : M86Instruction<
 //// XOR - bitXOR of two operands.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def XOR : M86Instruction<
-	0x00,
+	0xA4,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"XOR $Dst $Src",
@@ -579,7 +579,7 @@ def XOR : M86Instruction<
 //// OR - bitOR of two operands.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def OR : M86Instruction<
-	0x00,
+	0xA5,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"OR $Dst $Src",
@@ -591,7 +591,7 @@ def OR : M86Instruction<
 //// AND - bitAND of two operands.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def AND : M86Instruction<
-	0x00,
+	0xA6,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"XOR $Dst $Src",
@@ -603,7 +603,7 @@ def AND : M86Instruction<
 //// SHL - SHift Left.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def SHL : M86Instruction<
-	0x00,
+	0xA7,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"SHL $Dst $Src",
@@ -615,7 +615,7 @@ def SHL : M86Instruction<
 //// SHR - SHift Right.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def SHR : M86Instruction<
-	0x00,
+	0xA8,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"SHL $Dst $Src",
@@ -627,7 +627,7 @@ def SHR : M86Instruction<
 //// SRA - Shift Right Arithmetic.
 let isCommutable = 1, isReMaterializable = 0, Acc = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def SRA : M86Instruction<
-	0x00,
+	0xA9,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src),
 	"SRA $Dst $Src",
@@ -641,7 +641,7 @@ def SRA : M86Instruction<
 //// EXOR - extended bitxor of two operands.
 let isCommutable = 1, isReMaterializable = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def EXOR : M86Instruction<
-	0x00,
+	0xE0,
 	(outs GPR:$Dst),
 	(ins GPR:$Src, GPR:$Acc),
 	"EXOR $Dst $Src $Acc",
@@ -653,7 +653,7 @@ def EXOR : M86Instruction<
 //// EMUL - extended multiply of two operands.
 let isCommutable = 1, isReMaterializable = 0, AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def EMUL : M86Instruction<
-	0x00,
+	0xE1,
 	(outs GPR:$Dst),
 	(ins GPR:$Src, GPR:$Acc),
 	"EMUL $Dst $Src $Acc",
@@ -665,7 +665,7 @@ def EMUL : M86Instruction<
 //// EADDMUL - extended add and multiply of two operands.
 let isCommutable = 1, isReMaterializable = 0, Constraints = "$Dst = $Dst_out", AR1 = 0, AR2 = 0, AR3 = 0, AR4 = 0 in
 def EADDMUL : M86Instruction<
-	0x00,
+	0xE2,
 	(outs GPR:$Dst_out),
 	(ins GPR:$Dst, GPR:$Src, GPR:$Acc),
 	"EADDMUL $Dst $Src $Acc",
